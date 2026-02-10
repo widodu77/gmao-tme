@@ -407,7 +407,7 @@ def show_accueil():
         st.markdown("""
         <div style="background:#e8f4f8; padding:1.2rem; border-radius:0.5rem; height:220px;">
             <h4 style="color:#1f77b4;">Exploration</h4>
-            <p style="font-size:0.9rem;">Qualite des donnees, tendances temporelles, analyse Pareto des pieces,
+            <p style="font-size:0.9rem; color:#333;">Qualite des donnees, tendances temporelles, analyse Pareto des pieces,
             anomalies et pannes recurrentes, performance des prestataires.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -416,7 +416,7 @@ def show_accueil():
         st.markdown("""
         <div style="background:#e8f4f8; padding:1.2rem; border-radius:0.5rem; height:220px;">
             <h4 style="color:#1f77b4;">Modeles ML</h4>
-            <p style="font-size:0.9rem;">3 modeles entraines : prediction de panne (AUC 0.97),
+            <p style="font-size:0.9rem; color:#333;">3 modeles entraines : prediction de panne (AUC 0.97),
             prediction de besoin en pieces (AUC 0.99), et detection d'anomalies par consensus.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -425,7 +425,7 @@ def show_accueil():
         st.markdown("""
         <div style="background:#fff3cd; padding:1.2rem; border-radius:0.5rem; border-left:4px solid #ffc107; height:220px;">
             <h4 style="color:#856404;">Prediction Interactive</h4>
-            <p style="font-size:0.9rem;">Saisissez les parametres d'un ordre de travail (site, famille, cout, urgence...)
+            <p style="font-size:0.9rem; color:#333;">Saisissez les parametres d'un ordre de travail (site, famille, cout, urgence...)
             et obtenez en temps reel le risque de panne, le besoin en pieces et le score d'anomalie.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -437,7 +437,7 @@ def show_accueil():
         st.markdown("""
         <div style="background:#d4edda; padding:1.2rem; border-radius:0.5rem; border-left:4px solid #28a745;">
             <h4 style="color:#155724;">Feature Engineering</h4>
-            <p style="font-size:0.9rem;">95 features construites a partir des donnees brutes : temporelles, equipement,
+            <p style="font-size:0.9rem; color:#333;">95 features construites a partir des donnees brutes : temporelles, equipement,
             localisation, pieces de rechange, fenetres glissantes, et variables encodees.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -445,7 +445,7 @@ def show_accueil():
         st.markdown("""
         <div style="background:#d4edda; padding:1.2rem; border-radius:0.5rem; border-left:4px solid #28a745;">
             <h4 style="color:#155724;">Recommandations</h4>
-            <p style="font-size:0.9rem;">Constats critiques et opportunites d'optimisation chiffrees :
+            <p style="font-size:0.9rem; color:#333;">Constats critiques et opportunites d'optimisation chiffrees :
             conformite preventive, stock, performance prestataires, equipements a risque.</p>
         </div>
         """, unsafe_allow_html=True)
