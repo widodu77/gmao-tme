@@ -378,6 +378,90 @@ def show_predictions(data):
             st.plotly_chart(fig, use_container_width=True)
 
 
+# ─── PAGE: ACCUEIL ───────────────────────────────────────────────────────────
+
+def show_accueil():
+    st.markdown("""
+    <div style="text-align:center; padding: 2rem 0 1rem 0;">
+        <h1 style="font-size:3rem; color:#1f77b4; margin-bottom:0.2rem;">GMAO AI</h1>
+        <p style="font-size:1.3rem; color:#555; margin-top:0;">Maintenance Industrielle Intelligente</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    st.markdown("""
+    ### Qu'est-ce que c'est ?
+
+    Cette application analyse les donnees de maintenance (GMAO) de **5 sites industriels** sur une periode de **89 jours**
+    (Janvier - Mars 2025) et utilise des modeles de **Machine Learning** pour aider a la prise de decision.
+
+    Les donnees sources comprennent **2 035 ordres correctifs**, **9 149 ordres preventifs** et **12 573 demandes de pieces de rechange**.
+    """)
+
+    st.markdown("### Ce que vous trouverez ici")
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+        st.markdown("""
+        <div style="background:#e8f4f8; padding:1.2rem; border-radius:0.5rem; height:220px;">
+            <h4 style="color:#1f77b4;">Exploration</h4>
+            <p style="font-size:0.9rem;">Qualite des donnees, tendances temporelles, analyse Pareto des pieces,
+            anomalies et pannes recurrentes, performance des prestataires.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with c2:
+        st.markdown("""
+        <div style="background:#e8f4f8; padding:1.2rem; border-radius:0.5rem; height:220px;">
+            <h4 style="color:#1f77b4;">Modeles ML</h4>
+            <p style="font-size:0.9rem;">3 modeles entraines : prediction de panne (AUC 0.97),
+            prediction de besoin en pieces (AUC 0.99), et detection d'anomalies par consensus.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with c3:
+        st.markdown("""
+        <div style="background:#fff3cd; padding:1.2rem; border-radius:0.5rem; border-left:4px solid #ffc107; height:220px;">
+            <h4 style="color:#856404;">Prediction Interactive</h4>
+            <p style="font-size:0.9rem;">Saisissez les parametres d'un ordre de travail (site, famille, cout, urgence...)
+            et obtenez en temps reel le risque de panne, le besoin en pieces et le score d'anomalie.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("")
+
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("""
+        <div style="background:#d4edda; padding:1.2rem; border-radius:0.5rem; border-left:4px solid #28a745;">
+            <h4 style="color:#155724;">Feature Engineering</h4>
+            <p style="font-size:0.9rem;">95 features construites a partir des donnees brutes : temporelles, equipement,
+            localisation, pieces de rechange, fenetres glissantes, et variables encodees.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with c2:
+        st.markdown("""
+        <div style="background:#d4edda; padding:1.2rem; border-radius:0.5rem; border-left:4px solid #28a745;">
+            <h4 style="color:#155724;">Recommandations</h4>
+            <p style="font-size:0.9rem;">Constats critiques et opportunites d'optimisation chiffrees :
+            conformite preventive, stock, performance prestataires, equipements a risque.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    st.markdown("""
+    ### Comment naviguer ?
+
+    Utilisez le **menu a gauche** pour acceder aux differentes sections. Vous pouvez aussi filtrer par **site**
+    dans la barre laterale. Pour tester les modeles, allez directement dans **Prediction Interactive**.
+    """)
+
+    st.caption("Projet de stage — Analyse et prediction de maintenance industrielle par IA")
+
+
 # ─── PAGE: OVERVIEW ──────────────────────────────────────────────────────────
 
 def show_overview(data):
@@ -915,6 +999,7 @@ def main():
 
     st.sidebar.title("Navigation")
     page = st.sidebar.radio("Section", [
+        "Accueil",
         "Vue d'ensemble",
         "Exploration des Donnees",
         "Feature Engineering",
@@ -934,7 +1019,9 @@ def main():
     st.sidebar.markdown("---")
     st.sidebar.caption("GMAO AI Project | Jan-Mar 2025")
 
-    if page == "Vue d'ensemble":
+    if page == "Accueil":
+        show_accueil()
+    elif page == "Vue d'ensemble":
         show_overview(data)
     elif page == "Exploration des Donnees":
         show_exploration(data)
