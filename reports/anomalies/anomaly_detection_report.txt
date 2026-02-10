@@ -1,0 +1,38 @@
+
+DATASET:
+- Total maintenance orders: 2,035
+- Features used: 16
+- Feature engineering: Scaling with StandardScaler
+
+METHOD 1 - ISOLATION FOREST:
+- Contamination parameter: 10%
+- Detected anomalies: 204 (10.02%)
+- Algorithm: Ensemble of isolation trees
+
+METHOD 2 - ONE-CLASS SVM:
+- Nu parameter: 0.1
+- Training sample: 2,035 orders
+- Detected anomalies: 203 (9.98%)
+- Kernel: RBF (Radial Basis Function)
+
+CONSENSUS RESULTS:
+- Agreement rate: 93.37%
+- High confidence anomalies: 136 (6.68%)
+- Total consensus anomalies: 271 (13.32%)
+
+KEY FINDINGS:
+- Anomalies show 1649.4% higher costs on average
+- Most important features: rolling_7d_failures, rolling_30d_failures, equipment_age_days
+- Site with highest anomaly rate: MEDHUB
+
+DELIVERABLES:
+✓ Trained anomaly detection models
+✓ Anomaly predictions for all maintenance orders
+✓ Feature importance analysis
+✓ Underlying factors identification
+✓ Visualizations saved to analysis_outputs/anomalies/
+
+NEXT STEPS:
+- Use anomaly flags in maintenance effectiveness analysis
+- Investigate high-confidence anomalies for process improvement
+- Monitor new maintenance orders for anomalous patterns

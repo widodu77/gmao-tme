@@ -1,0 +1,353 @@
+================================================================================
+PHASE 2: EXPLORATORY DATA ANALYSIS
+================================================================================
+
+================================================================================
+TEMPORAL ANALYSIS: Maintenance Trends
+================================================================================
+
+1. Daily Maintenance Volume:
+maintenance_type  corrective   preventive
+count              90.000000    90.000000
+mean               22.611111   101.655556
+std                11.536648   394.410473
+min                 1.000000     0.000000
+25%                12.250000     9.000000
+50%                22.000000    10.000000
+75%                30.750000    28.000000
+max                50.000000  2128.000000
+
+   Saved: analysis_outputs\temporal\maintenance_trends.png
+
+2. Mean Time Between Failures (MTBF) Analysis:
+
+   MTBF by Equipment Family (top 15):
+                                                      mean     median  count
+famille                                                                     
+Equipement de sécurité, contôle et exploitation   7.024722   1.927778     15
+Clôture                                           7.970910   2.881250     27
+Equipement de signalisation                      10.826389   5.645486      6
+Terre plein                                      11.950098   7.486111     85
+Ouvrages d'amarrage et d'accostage               12.909524  14.738194      7
+Equipement de protection contre incendie         12.935828  10.407639     54
+Equipement électrique                            13.799444  11.044444     10
+Equipement Electrique                            14.722057   9.312500     21
+Voies de circulation                             17.358387  10.160764     52
+Structure d'ombrage                              17.938194  20.402083      5
+Equipement éclairage                             18.511298  11.638194     26
+Equipement plomberie et sanitaire                18.827598  11.834722     54
+Element de structure                             19.672917  11.764931      6
+Regard d'assainissement                          21.278836  15.974306     21
+Equipement lot archi / Menuiserie                21.301048  13.884028     53
+   Saved: analysis_outputs\temporal\mtbf_analysis.png
+
+3. Preventive Maintenance Compliance:
+
+   On-time execution (within 1 day): 2366 / 8932 (26.5%)
+   Average deviation: 23.72 days
+   Median deviation: 7.58 days
+
+   Compliance by Frequency:
+          days_deviation                 
+                    mean     median count
+frequence                                
+A              19.933815   8.531250  1166
+H               1.325264   0.000000   792
+J               5.624637   0.375000   805
+M               8.219222   5.166667   141
+S              55.259991  11.375000  2169
+T              16.063272  11.916667  3859
+
+   Status Distribution:
+etat
+Réalisé                   8742
+Rejeté par prestataire     208
+Validé                     189
+En Stand By                  5
+Ouvert                       4
+En Cours                     1
+   Saved: analysis_outputs\temporal\preventive_compliance.png
+
+================================================================================
+SPARE PARTS ANALYSIS: Pareto Analysis
+================================================================================
+
+1. Pareto Analysis Results:
+   Top 144 articles (11.0%) represent 80% of costs
+   Total articles: 1305
+
+   Top 20 Most Expensive Articles:
+                                                  total_cost  total_quantity  request_count
+article                                                                                    
+Lampe LED E27 15W  6500K                            363500.0          1454.0            352
+Peinture vinylique blanc 30KG                       360720.0           668.0            203
+Abattant toilette anglaise standard et suspendu     294000.0           140.0             97
+Spot LED GU10 7W 6500K                              281970.0          1446.0            340
+Ruban adhésif noire                                 280800.0           432.0            153
+Câble capotin 3G2,5                                 270450.0          3606.0             53
+Robinet lavabo mitigeur                             248460.0           303.0            200
+Peinture laque 20 KG blanc                          229160.0           337.0            149
+Distributeur papier hygiénique Inox                 228650.0           269.0            107
+Distributeur savon liquide INOX                     224000.0           320.0            198
+Cylindre de serrure standard                        208200.0           694.0            479
+Câble cuivre U1000 R2V 5G16mm2                      201600.0          1400.0              3
+CÂBLE D'ALIMENTATION BASSE TENSION 5G16mm2          189240.0          1200.0              2
+silicone                                            187800.0           626.0            148
+Moteur pour portail MR300/CR/MVF110                 179200.0             8.0              8
+Poignée aluminium (pair)                            176150.0           271.0            169
+Fourniture de Carte cabine.                         171000.0             9.0              2
+Peinture de traçage blanc 25KG                      161700.0           147.0             23
+Drapeau Maroc                                       158400.0           132.0             65
+centrale ESSER IQ8 CONTROL μ avec UGA en coffret    155250.0             3.0              3
+   Saved: analysis_outputs\spare_parts\pareto_analysis.png
+
+2. Consumption by Spare Parts Family:
+                           cout_total                     quantite_demande
+                                  sum          mean count              sum
+famille                                                                   
+ELECTRICITE                4950775.90   1366.108140  3624          42217.0
+PLOMBERIE                  2301198.75    680.224283  3383           9992.0
+PEINTURE                   1140590.00    916.136546  1245           9250.0
+CLIMATISATION              1026218.60   2265.383223   453           1341.0
+DIVERS                      996097.29    930.062829  1071          22610.0
+MENUISERIE                  919149.00    475.258014  1934           5567.0
+MECANIQUE                   540312.15   2548.642217   212           5434.0
+INCENDIE                    434683.80   3343.721538   130           2008.0
+HYDRAULIQUE                 392574.50   3043.213178   129           5262.0
+ELECTROMECANIQUE            357859.70   3166.900000   113            822.0
+ELECTRONIQUE                241270.00  10490.000000    23            127.0
+CONSTRUCTION                 45737.00    190.570833   240           4549.0
+BALISAGE MARITIME            22350.00   3725.000000     6              6.0
+PANNEAUX DE SIGNALISATION     4200.00    525.000000     8             10.0
+SIGNALISATION                  891.00    445.500000     2              3.0
+   Saved: analysis_outputs\spare_parts\consumption_by_family.png
+
+3. Stock Availability Analysis:
+
+   Stock-out situations: 6165 (49.0%)
+
+   Stock-outs by Family (Top 10):
+famille
+PLOMBERIE           1755
+ELECTRICITE         1546
+MENUISERIE          1349
+DIVERS               470
+PEINTURE             315
+CLIMATISATION        308
+MECANIQUE            148
+INCENDIE              94
+HYDRAULIQUE           88
+ELECTROMECANIQUE      54
+
+   Average Stock Levels by Family (Top 10):
+famille
+CONSTRUCTION        116.062500
+DIVERS               92.731092
+PEINTURE             80.050602
+ELECTRICITE          38.594095
+ELECTROMECANIQUE     31.530973
+MECANIQUE            22.075472
+PLOMBERIE            17.071830
+CLIMATISATION         6.618102
+MENUISERIE            6.342813
+INCENDIE              3.784615
+
+4. Rejection Analysis:
+
+   Total rejections: 2061 (16.4%)
+
+   Rejection Reasons (Top 10):
+motif_rejet
+errer ou niveau de système             109
+Existe dans le stock récupe.           100
+à modifier le PDR demandé.              97
+en double                               58
+à modifier le PDR demandé\n             54
+L'article demandé est indisponible      49
+L'article demandé est indisponible.     48
+déjà validé sous N° Demande 905         45
+l'article demandé est indisponible      35
+EN DOUBLE                               34
+
+   Rejections by Family (Top 10):
+famille
+ELECTRICITE      785
+PLOMBERIE        453
+MENUISERIE       392
+DIVERS           129
+PEINTURE          93
+CLIMATISATION     63
+CONSTRUCTION      41
+HYDRAULIQUE       30
+MECANIQUE         27
+INCENDIE          26
+
+================================================================================
+ANOMALY ANALYSIS: Anomaly Types
+================================================================================
+
+1. Top 20 Anomaly Types:
+anomalie
+Travaux de maintenance                   224
+Dégradation                              109
+Endomagement                              61
+Arrachement                               53
+endommage                                 45
+Dégradtion du sol                         40
+Desencastrement                           39
+Serrure endommagé                         36
+Chasse endommagé                          35
+Flux lumineux faible                      34
+Poigné endommagé                          33
+Endommagement                             31
+Dégradation                               25
+Brèche à la clôture                       24
+Déformation                               23
+Habillage dégradé                         22
+sol defectué                              21
+Dégradation des matériaux                 21
+Bouchage                                  20
+dérangement au niveau de la centrale      20
+
+2. Anomalies by Equipment Family:
+famille
+Equipement lot archi / Menuiserie           385
+Equipement plomberie et sanitaire           310
+Equipement éclairage                        263
+Voies de circulation                        169
+Terre plein                                 115
+Equipement Electrique                       111
+Equipement de protection contre incendie    104
+Regard d'assainissement                      88
+Clôture                                      85
+Equipement électrique                        75
+   Saved: analysis_outputs\anomalies\anomaly_types.png
+
+3. Failure Hotspots by Location:
+
+   Failures by Site:
+        failure_count  total_cost  high_urgency_count
+site                                                 
+MEDHUB            209  1859867.33                   1
+PPR               488  8747116.83                  14
+TM1              1119  6393571.47                   9
+TM2               104   951793.30                   1
+TMSA              115    11377.88                   1
+
+   Top 15 Failure Zones:
+site    zone      
+PPR     PPR01         386
+TM1     TM01          375
+        SAS EXPORT    308
+        TMPC01        255
+MEDHUB  ZFL01         184
+TM1     SAS IMPORT    130
+TMSA    TMSA          115
+TM2     TM02           96
+PPR     GATE3          71
+TM1     ZEXT01         51
+PPR     GATE2          27
+MEDHUB  ZFL02          25
+TM2     ZEXT01          7
+PPR     ZEXT01          4
+TM2     TM01            1
+   Saved: analysis_outputs\anomalies\failure_hotspots.png
+
+4. Recurrence Analysis:
+
+   Equipment with multiple failures: 267
+   Average failures per recurring equipment: 2.71
+
+   Top 15 Equipment by Failure Count:
+   Portail mécanique01 (ID: 34631): 16 failures
+   TM1_Parking 2 (ID: 28054): 14 failures
+   Sprinkler LOT 60 - 70 (ID: 5722): 13 failures
+   SAS EXP Parking 3 (ID: 28026): 10 failures
+   ZFL Parking 15 (ID: 28050): 8 failures
+   SAS EXP Parking 4 (ID: 28027): 8 failures
+   Voirie (ID: 487): 7 failures
+   SAS EXP Parking 5 (ID: 28028): 7 failures
+   Sprinkler LOT 92 - 102 (ID: 5725): 7 failures
+   Radar vitesse1 Voie périphérique TM1 (ID: 8983): 7 failures
+   PPR Regard EU-EPL 186 (ID: 33102): 6 failures
+   TM1 Parking 1 (ID: 28053): 6 failures
+   Voirie (ID: 344): 6 failures
+   Porte aluminium 1 (ID: 1241697): 6 failures
+   Voirie (ID: 384): 5 failures
+
+   Reopened orders: 43 (2.1%)
+
+================================================================================
+EFFICIENCY ANALYSIS: Intervention Times
+================================================================================
+
+1. Time to Closure Analysis:
+   Average time to closure: 426.17 hours
+   Median time to closure: 88.48 hours
+
+   Time to closure by Urgence:
+                mean  median  count
+urgence                            
+Faible   2750.260000  333.30      5
+Fort      427.146212  112.80     22
+Moyen     419.227490   86.35   1677
+
+   Time to closure by Equipment Family (Top 10):
+                                           mean      median  count
+famille                                                           
+Element de structure                1025.727619  256.983333     35
+Voies de circulation                 914.734404  211.850000    109
+Regard d'assainissement              602.823611  225.966667     72
+Equipement lot archi / Menuiserie    558.550819   46.983333    346
+Terre plein                          533.350383  248.883333     87
+Structure d'ombrage                  414.143333   77.575000     10
+Equipement climatisation et VMC      354.850505   25.483333     33
+Equipement éclairage                 342.062550   67.816667    251
+Equipement plomberie et sanitaire    325.791834   52.033333    298
+Equipement Electrique                311.066886   86.200000     76
+   Saved: analysis_outputs\efficiency\intervention_times.png
+
+2. Cost Efficiency Analysis:
+   Average total cost per order: 8827.38
+   Median total cost per order: 229.84
+
+   Cost by Portfolio:
+                       sum          mean  count
+portfolio                                      
+batiment        5779394.44   5083.020616   1137
+equipement      2483018.52   8009.737161    310
+infrastructure  9701313.85  16498.833078    588
+
+   Average cost per hour: 201.30
+   Median cost per hour: 54.31
+   Saved: analysis_outputs\efficiency\cost_efficiency.png
+
+3. Service Provider Performance:
+
+   Top Service Providers:
+                    order_count  avg_time_to_closure      avg_cost  avg_duration
+prestataire                                                                     
+TMU                        1292           347.987561   5852.345039     75.873336
+NZALA                       392           739.351836  10772.079082    123.814209
+MMI                         117            29.803003     97.246838      0.791624
+AQUA FLOR PROTECT            66           133.209167    918.586364      3.015606
+CAMPEZO                      60          4873.280000  94899.466667    118.624333
+TMU-HY                       51          1040.000000      0.156863      1.879412
+TMU-CN                       20           163.515278  15786.702000      0.729500
+bon de commande              15                  NaN      0.000000      0.000000
+ADAM STD                     11            62.556250   8919.751818     14.904545
+AQUARELLE FLEUR               7           129.266667      0.000000      0.000000
+   Saved: analysis_outputs\efficiency\provider_comparison.png
+
+================================================================================
+PHASE 2 COMPLETE
+================================================================================
+
+Analysis outputs saved to: analysis_outputs/
+- Temporal analysis: analysis_outputs/temporal/
+- Spare parts analysis: analysis_outputs/spare_parts/
+- Anomaly analysis: analysis_outputs/anomalies/
+- Efficiency analysis: analysis_outputs/efficiency/
+- Summary: analysis_outputs\eda_summary.json
+
+Next step: Run phase3_feature_engineering.py

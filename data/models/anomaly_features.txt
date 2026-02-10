@@ -1,0 +1,16 @@
+cout_total
+duree_intervention_par_heure
+time_to_closure_hours
+time_to_start_hours
+num_spare_parts_requests
+total_parts_cost
+equipment_failure_count
+equipment_avg_cost
+days_since_last_maintenance
+equipment_age_days
+site_failure_count
+zone_failure_count
+rolling_7d_failures
+rolling_30d_failures
+rolling_7d_avg_cost
+rolling_30d_avg_cost

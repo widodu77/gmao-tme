@@ -1,0 +1,258 @@
+{
+  "Corrective": {
+    "total_rows": 2035,
+    "total_columns": 51,
+    "missing_values": {
+      "cout_bc": {
+        "count": 2035,
+        "percentage": 100.0
+      },
+      "commentaire_ouverture": {
+        "count": 1994,
+        "percentage": 97.98525798525799
+      },
+      "responsable_reouverture": {
+        "count": 1992,
+        "percentage": 97.88697788697789
+      },
+      "date_reouverture": {
+        "count": 1992,
+        "percentage": 97.88697788697789
+      },
+      "motif_standby": {
+        "count": 1866,
+        "percentage": 91.69533169533169
+      },
+      "motif_rejet": {
+        "count": 1823,
+        "percentage": 89.58230958230958
+      },
+      "date_rejet": {
+        "count": 1823,
+        "percentage": 89.58230958230958
+      },
+      "responsable_rejet": {
+        "count": 1823,
+        "percentage": 89.58230958230958
+      },
+      "cout_pdr": {
+        "count": 1582,
+        "percentage": 77.73955773955774
+      },
+      "date_validation": {
+        "count": 490,
+        "percentage": 24.078624078624077
+      }
+    },
+    "duplicates": 0,
+    "data_types": {
+      "portfolio": "object",
+      "id_ordre_travail": "int64",
+      "id_demande": "int64",
+      "etat": "object",
+      "motif_standby": "object",
+      "anomalie": "object",
+      "urgence": "object",
+      "impact_disponibilite": "object",
+      "vandalisme": "object",
+      "palliative": "object",
+      "avec_demande_pdr": "object",
+      "est_reouvert": "object",
+      "site": "object",
+      "zone": "object",
+      "famille": "object",
+      "groupe": "object",
+      "localisation": "object",
+      "actif": "object",
+      "demandeur": "object",
+      "ot_fils": "object",
+      "date_declaration": "object",
+      "createur_ot": "object",
+      "date_creation_ot": "object",
+      "utilisateur_prestataire": "object",
+      "date_debut_reparation": "object",
+      "responsable_cloture": "object",
+      "date_cloture": "object",
+      "commentaire_cloture": "object",
+      "responsable_reouverture": "object",
+      "date_reouverture": "object",
+      "commentaire_ouverture": "object",
+      "validateur_travaux": "object",
+      "date_validation": "object",
+      "responsable_rejet": "object",
+      "date_rejet": "object",
+      "motif_rejet": "object",
+      "prestataire": "object",
+      "cout_maindoeuvre": "float64",
+      "cout_pdr": "float64",
+      "cout_bc": "float64",
+      "cout_total": "float64",
+      "description": "object",
+      "plateforme_creation": "object",
+      "plateforme_prestataire": "object",
+      "plateforme_cloture": "object",
+      "plateforme_rejet": "object",
+      "plateforme_reouverture": "object",
+      "plateforme_validation": "object",
+      "nombre_main_doeuvre": "int64",
+      "duree_intervention_par_heure": "float64",
+      "id_actif": "int64"
+    }
+  },
+  "Preventive": {
+    "total_rows": 9149,
+    "total_columns": 40,
+    "missing_values": {
+      "date_rejet": {
+        "count": 9149,
+        "percentage": 100.0
+      },
+      "commentaire_cloture": {
+        "count": 9149,
+        "percentage": 100.0
+      },
+      "commentaire_ouverture": {
+        "count": 9140,
+        "percentage": 99.90162859328888
+      },
+      "responsable_reouverture": {
+        "count": 9139,
+        "percentage": 99.89069843698765
+      },
+      "date_reouverture": {
+        "count": 9139,
+        "percentage": 99.89069843698765
+      },
+      "motif_standby": {
+        "count": 9127,
+        "percentage": 99.75953656137283
+      },
+      "responsable_validation": {
+        "count": 8960,
+        "percentage": 97.93420045906657
+      },
+      "id_responsable_validation": {
+        "count": 8960,
+        "percentage": 97.93420045906657
+      },
+      "date_validation": {
+        "count": 8960,
+        "percentage": 97.93420045906657
+      },
+      "id_responsable_rejet": {
+        "count": 8941,
+        "percentage": 97.7265274893431
+      }
+    },
+    "duplicates": 0,
+    "data_types": {
+      "numero_ot": "int64",
+      "portfolio": "object",
+      "famille": "object",
+      "groupe": "object",
+      "site": "object",
+      "zone": "object",
+      "localisation": "object",
+      "etage": "object",
+      "salle": "object",
+      "id_actif": "int64",
+      "actif": "object",
+      "code_actif": "object",
+      "numero_intervention": "int64",
+      "nom_intervention": "object",
+      "frequence": "object",
+      "date_debut_planifiee": "datetime64[ns]",
+      "date_fin_planifiee": "datetime64[ns]",
+      "entite": "object",
+      "prestataire": "object",
+      "etat": "object",
+      "is_reopened": "object",
+      "pourcentage": "float64",
+      "date_debut": "datetime64[ns]",
+      "date_fin": "datetime64[ns]",
+      "cout": "float64",
+      "motif_standby": "object",
+      "date_cloture": "datetime64[ns]",
+      "responsable_cloture": "object",
+      "id_responsable_cloture": "float64",
+      "date_validation": "datetime64[ns]",
+      "responsable_validation": "object",
+      "id_responsable_validation": "float64",
+      "commentaire_cloture": "float64",
+      "date_reouverture": "object",
+      "responsable_reouverture": "object",
+      "id_responsable_rejet": "float64",
+      "commentaire_ouverture": "object",
+      "responsable_rejet": "object",
+      "motif_rejet": "object",
+      "date_rejet": "float64"
+    }
+  },
+  "Spare Parts": {
+    "total_rows": 12573,
+    "total_columns": 22,
+    "missing_values": {
+      "description": {
+        "count": 12251,
+        "percentage": 97.4389564940746
+      },
+      "motif_rejet": {
+        "count": 10761,
+        "percentage": 85.58816511572417
+      },
+      "responsable_rejet": {
+        "count": 10749,
+        "percentage": 85.49272250059651
+      },
+      "date_rejet": {
+        "count": 10749,
+        "percentage": 85.49272250059651
+      },
+      "magasinier": {
+        "count": 2616,
+        "percentage": 20.806490097828682
+      },
+      "date_cloture": {
+        "count": 2202,
+        "percentage": 17.5137198759246
+      },
+      "validateur": {
+        "count": 1386,
+        "percentage": 11.023622047244094
+      },
+      "date_validation_superviseur": {
+        "count": 1007,
+        "percentage": 8.00922611946234
+      },
+      "quantite_demande": {
+        "count": 1,
+        "percentage": 0.007953551260637876
+      }
+    },
+    "duplicates": 437,
+    "data_types": {
+      "id_demande": "int64",
+      "site": "object",
+      "etat": "object",
+      "demandeur": "object",
+      "validateur": "object",
+      "magasinier": "object",
+      "responsable_rejet": "object",
+      "id_ot": "int64",
+      "centre_charges": "object",
+      "date_demande": "object",
+      "date_validation_superviseur": "object",
+      "date_cloture": "object",
+      "date_rejet": "object",
+      "motif_rejet": "object",
+      "article": "object",
+      "code_article": "object",
+      "famille": "object",
+      "quantite_dispo": "int64",
+      "quantite_demande": "float64",
+      "cout_total": "float64",
+      "magasin": "object",
+      "description": "object"
+    }
+  }
+}

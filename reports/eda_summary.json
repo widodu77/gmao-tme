@@ -1,0 +1,173 @@
+{
+  "temporal_trends": {
+    "daily_avg_corrective": 22.61111111111111,
+    "daily_avg_preventive": 101.65555555555555,
+    "busiest_day_of_week": "Sat",
+    "busiest_hour": 23
+  },
+  "mtbf": {
+    "mean": {
+      "Equipement de sécurité, contôle et exploitation": 7.0247222222222225,
+      "Clôture": 7.97091049382716,
+      "Equipement de signalisation": 10.826388888888891,
+      "Terre plein": 11.950098039215685,
+      "Ouvrages d'amarrage et d'accostage": 12.909523809523808,
+      "Equipement de protection contre incendie": 12.93582818930041,
+      "Equipement électrique": 13.799444444444443,
+      "Equipement Electrique": 14.722056878306878,
+      "Voies de circulation": 17.358386752136752,
+      "Structure d'ombrage": 17.938194444444445,
+      "Equipement éclairage": 18.511298076923076,
+      "Equipement plomberie et sanitaire": 18.827597736625513,
+      "Element de structure ": 19.67291666666667,
+      "Regard d'assainissement": 21.27883597883598,
+      "Equipement lot archi / Menuiserie ": 21.30104821802935
+    },
+    "median": {
+      "Equipement de sécurité, contôle et exploitation": 1.9277777777777778,
+      "Clôture": 2.88125,
+      "Equipement de signalisation": 5.645486111111111,
+      "Terre plein": 7.486111111111111,
+      "Ouvrages d'amarrage et d'accostage": 14.738194444444444,
+      "Equipement de protection contre incendie": 10.40763888888889,
+      "Equipement électrique": 11.044444444444444,
+      "Equipement Electrique": 9.3125,
+      "Voies de circulation": 10.160763888888889,
+      "Structure d'ombrage": 20.402083333333334,
+      "Equipement éclairage": 11.638194444444444,
+      "Equipement plomberie et sanitaire": 11.834722222222222,
+      "Element de structure ": 11.764930555555555,
+      "Regard d'assainissement": 15.974305555555556,
+      "Equipement lot archi / Menuiserie ": 13.884027777777778
+    },
+    "count": {
+      "Equipement de sécurité, contôle et exploitation": 15,
+      "Clôture": 27,
+      "Equipement de signalisation": 6,
+      "Terre plein": 85,
+      "Ouvrages d'amarrage et d'accostage": 7,
+      "Equipement de protection contre incendie": 54,
+      "Equipement électrique": 10,
+      "Equipement Electrique": 21,
+      "Voies de circulation": 52,
+      "Structure d'ombrage": 5,
+      "Equipement éclairage": 26,
+      "Equipement plomberie et sanitaire": 54,
+      "Element de structure ": 6,
+      "Regard d'assainissement": 21,
+      "Equipement lot archi / Menuiserie ": 53
+    }
+  },
+  "preventive_compliance": {
+    "compliance_rate": 26.489028213166144,
+    "avg_deviation_days": 23.715435412653576,
+    "on_time_count": 2366,
+    "total_count": 8932
+  },
+  "pareto": {
+    "shape": [
+      1305,
+      5
+    ],
+    "columns": [
+      "total_cost",
+      "total_quantity",
+      "request_count",
+      "cumulative_cost",
+      "cumulative_pct"
+    ],
+    "sample": "See analysis visualizations"
+  },
+  "consumption_by_family": {
+    "shape": [
+      15,
+      4
+    ],
+    "columns": [
+      [
+        "cout_total",
+        "sum"
+      ],
+      [
+        "cout_total",
+        "mean"
+      ],
+      [
+        "cout_total",
+        "count"
+      ],
+      [
+        "quantite_demande",
+        "sum"
+      ]
+    ],
+    "sample": "See analysis visualizations"
+  },
+  "stock_availability": {
+    "stock_out_count": 6165,
+    "stock_out_percentage": 49.033643521832495,
+    "top_stockout_family": "PLOMBERIE"
+  },
+  "rejection": {
+    "rejection_rate": 16.39226914817466,
+    "total_rejections": 2061
+  },
+  "anomaly_types": {
+    "data": "See analysis visualizations",
+    "length": 20
+  },
+  "failure_hotspots": {
+    "shape": [
+      5,
+      3
+    ],
+    "columns": [
+      "failure_count",
+      "total_cost",
+      "high_urgency_count"
+    ],
+    "sample": "See analysis visualizations"
+  },
+  "recurrence": {
+    "recurring_equipment_count": 267,
+    "avg_failures_per_recurring": 2.7116104868913857,
+    "reopen_rate": 2.113022113022113
+  },
+  "intervention_times": {
+    "shape": [
+      3,
+      3
+    ],
+    "columns": [
+      "mean",
+      "median",
+      "count"
+    ],
+    "sample": "See analysis visualizations"
+  },
+  "cost_efficiency": {
+    "shape": [
+      3,
+      3
+    ],
+    "columns": [
+      "sum",
+      "mean",
+      "count"
+    ],
+    "sample": "See analysis visualizations"
+  },
+  "provider_performance": {
+    "shape": [
+      13,
+      4
+    ],
+    "columns": [
+      "order_count",
+      "avg_time_to_closure",
+      "avg_cost",
+      "avg_duration"
+    ],
+    "sample": "See analysis visualizations"
+  }
+}

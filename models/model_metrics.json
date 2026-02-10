@@ -1,0 +1,159 @@
+{
+  "anomaly_detection": {
+    "total_samples": 2035,
+    "isolation_forest_anomalies": 204,
+    "ocsvm_anomalies": 204,
+    "consensus_anomalies": 268,
+    "high_confidence_anomalies": 140,
+    "agreement_pct": 93.71,
+    "feature_comparison": {
+      "cout_total": {
+        "normal_mean": 3272.28,
+        "anomaly_mean": 45453.78,
+        "difference_pct": 1289.1
+      },
+      "duree_intervention_par_heure": {
+        "normal_mean": 40.63,
+        "anomaly_mean": 307.64,
+        "difference_pct": 657.1
+      },
+      "time_to_closure_hours": {
+        "normal_mean": 233.04,
+        "anomaly_mean": 1657.7,
+        "difference_pct": 611.3
+      }
+    }
+  },
+  "failure_prediction": {
+    "target": "will_fail_within_30_days",
+    "n_samples": 2035,
+    "n_features": 67,
+    "positive_rate": 0.1886977886977887,
+    "test_precision": 0.7558139534883721,
+    "test_recall": 0.8441558441558441,
+    "test_f1": 0.7975460122699386,
+    "test_roc_auc": 0.9728846910665092,
+    "cv_roc_auc_mean": 0.970917778454025,
+    "cv_roc_auc_std": 0.005009768356655447,
+    "classification_report": {
+      "No Failure": {
+        "precision": 0.9626168224299065,
+        "recall": 0.9363636363636364,
+        "f1-score": 0.9493087557603687,
+        "support": 330.0
+      },
+      "Failure": {
+        "precision": 0.7558139534883721,
+        "recall": 0.8441558441558441,
+        "f1-score": 0.7975460122699386,
+        "support": 77.0
+      },
+      "accuracy": 0.918918918918919,
+      "macro avg": {
+        "precision": 0.8592153879591393,
+        "recall": 0.8902597402597403,
+        "f1-score": 0.8734273840151536,
+        "support": 407.0
+      },
+      "weighted avg": {
+        "precision": 0.9234919553328594,
+        "recall": 0.918918918918919,
+        "f1-score": 0.9205968853702874,
+        "support": 407.0
+      }
+    },
+    "confusion_matrix": [
+      [
+        309,
+        21
+      ],
+      [
+        12,
+        65
+      ]
+    ],
+    "feature_importance": {
+      "equipment_failure_count": 0.37027933197107543,
+      "anomaly_recurrence_count": 0.16997439919877017,
+      "equipment_age_days": 0.029056454178917123,
+      "rolling_30d_failures": 0.025433628457543867,
+      "famille_avg_cost": 0.02343681022546456,
+      "rolling_7d_failures": 0.021818424418341746,
+      "days_since_last_maintenance": 0.0214456517366545,
+      "equipment_avg_duration": 0.021246301718936947,
+      "equipment_avg_cost": 0.02045146781374855,
+      "creation_day_of_month": 0.016311185053949077,
+      "portfolio_encoded": 0.016253834921643957,
+      "famille_spare_parts_usage_rate": 0.01590275355096113,
+      "duree_intervention_par_heure": 0.015662278809276148,
+      "time_to_start_hours": 0.01507812876721701,
+      "groupe_encoded": 0.014563642484350525
+    }
+  },
+  "spare_parts_prediction": {
+    "target": "will_need_spare_parts",
+    "n_samples": 2035,
+    "n_features": 62,
+    "positive_rate": 0.2624078624078624,
+    "test_precision": 0.9611650485436893,
+    "test_recall": 0.9252336448598131,
+    "test_f1": 0.9428571428571428,
+    "test_roc_auc": 0.9899688473520248,
+    "cv_roc_auc_mean": 0.98857954743617,
+    "cv_roc_auc_std": 0.005983239661986357,
+    "classification_report": {
+      "No Parts": {
+        "precision": 0.9736842105263158,
+        "recall": 0.9866666666666667,
+        "f1-score": 0.9801324503311258,
+        "support": 300.0
+      },
+      "Needs Parts": {
+        "precision": 0.9611650485436893,
+        "recall": 0.9252336448598131,
+        "f1-score": 0.9428571428571428,
+        "support": 107.0
+      },
+      "accuracy": 0.9705159705159705,
+      "macro avg": {
+        "precision": 0.9674246295350026,
+        "recall": 0.9559501557632399,
+        "f1-score": 0.9614947965941343,
+        "support": 407.0
+      },
+      "weighted avg": {
+        "precision": 0.9703929320689668,
+        "recall": 0.9705159705159705,
+        "f1-score": 0.9703327994718723,
+        "support": 407.0
+      }
+    },
+    "confusion_matrix": [
+      [
+        296,
+        4
+      ],
+      [
+        8,
+        99
+      ]
+    ],
+    "feature_importance": {
+      "cout_pdr": 0.7925708083693676,
+      "famille_spare_parts_usage_rate": 0.05714111772461516,
+      "time_to_closure_hours": 0.026151642518516323,
+      "duree_intervention_par_heure": 0.025387591363091655,
+      "groupe_encoded": 0.01910052339947053,
+      "creation_day_of_month": 0.014800524942472726,
+      "nombre_main_doeuvre": 0.009177540750793958,
+      "time_to_start_hours": 0.007169638210193076,
+      "rolling_7d_avg_cost": 0.005697566736097207,
+      "equipment_failure_count": 0.0042636067438816955,
+      "rolling_30d_avg_cost": 0.004154991088730661,
+      "cout_maindoeuvre": 0.0031501460180137337,
+      "creation_hour": 0.0029833126472161853,
+      "cout_total": 0.0027010260822984415,
+      "creation_day_of_week": 0.0026846755308842867
+    }
+  }
+}

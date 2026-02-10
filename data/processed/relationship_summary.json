@@ -1,0 +1,27 @@
+{
+  "corrective_with_spare_parts": {
+    "count": 534,
+    "percentage": 26.24078624078624,
+    "avg_parts_per_order": 1.9063670411985019,
+    "avg_cost_per_order": 1912.500468164794
+  },
+  "asset_utilization": {
+    "total_assets": 7090,
+    "assets_corrective_only": 1295,
+    "assets_preventive_only": 5512,
+    "assets_both": 283,
+    "avg_maintenance_per_asset": 1.5774330042313116
+  },
+  "location_distribution": {
+    "total_sites": 5,
+    "total_zones": 16,
+    "most_active_site": "TM1",
+    "most_active_site_count": 5273
+  },
+  "timeline_statistics": {
+    "total_events": 11184,
+    "corrective_events": 2035,
+    "preventive_events": 9149,
+    "date_range_days": 89
+  }
+}

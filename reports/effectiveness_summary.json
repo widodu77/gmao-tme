@@ -1,0 +1,43 @@
+{
+  "comparison": {
+    "Corrective": {
+      "total_interventions": 2035.0,
+      "avg_duration_hours": 75.79724815724816,
+      "median_duration_hours": 2.49,
+      "avg_cost": 8827.384181818183,
+      "total_cost": 17963726.810000002,
+      "unique_equipment": 1578.0
+    },
+    "Preventive": {
+      "total_interventions": 9149.0,
+      "avg_duration_hours": 377.4660854715784,
+      "median_duration_hours": 242.2599763888889,
+      "avg_cost": 44863.79962509563,
+      "total_cost": 410458902.7699999,
+      "unique_equipment": 5795.0
+    },
+    "Ratio (Corr/Prev)": {
+      "total_interventions": 0.22242868073013444,
+      "avg_duration_hours": 0.2008054526608732,
+      "median_duration_hours": 0.01027821449137317,
+      "avg_cost": 0.19675962035280614,
+      "total_cost": 0.043764982776036784,
+      "unique_equipment": 0.2723037100949094
+    }
+  },
+  "roi": {
+    "preventive_investment": 410458902.7699999,
+    "estimated_cost_avoided": 39581671.81138783,
+    "net_benefit": -370877230.9586121,
+    "roi_percent": -90.35672717919645
+  },
+  "compliance": {
+    "compliance_rate": 26.489028213166144,
+    "avg_deviation_days": 23.715435412653576,
+    "median_deviation_days": 7.583333333333333,
+    "on_time_count": 2366,
+    "total_with_data": 8932
+  },
+  "optimal_interval_days": 43.0,
+  "n_families_analyzed": 22
+}

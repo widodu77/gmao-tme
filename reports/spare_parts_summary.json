@@ -1,0 +1,22 @@
+{
+  "stock_health": {
+    "total_requests": 12573,
+    "unique_articles": 1305,
+    "stock_out_count": 6165,
+    "stock_out_pct": 49.0,
+    "rejection_count": 2061,
+    "rejection_rate_pct": 16.4,
+    "total_cost": 13373907.690000001,
+    "top_stockout_families": {
+      "PLOMBERIE": 1755,
+      "ELECTRICITE": 1546,
+      "MENUISERIE": 1349,
+      "DIVERS": 470,
+      "PEINTURE": 315
+    }
+  },
+  "pareto_80_count": 144,
+  "pareto_total_articles": 1305,
+  "articles_needing_reorder": 911,
+  "total_forecast_cost_90d": 1256421.3905010438
+}

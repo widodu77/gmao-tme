@@ -1,0 +1,114 @@
+Loading cleaned datasets...
+Loaded corrective: (2035, 53)
+Loaded preventive: (9149, 42)
+Loaded spare parts: (12573, 25)
+
+================================================================================
+LINKING SPARE PARTS TO WORK ORDERS
+================================================================================
+
+1. Linking spare parts to corrective maintenance...
+   Corrective orders with spare parts links: (2519, 78)
+   534 out of 2035 corrective orders have spare parts requests
+   Percentage: 26.2%
+
+   Integrated corrective dataset shape: (2035, 59)
+
+================================================================================
+CREATING ASSET MASTER TABLE
+================================================================================
+
+Total unique assets: 7090
+Assets in corrective only: 1295
+Assets in preventive only: 5512
+Assets in both: 283
+
+Top 10 assets by total maintenance events:
+ id_actif                        actif                                         famille  total_maintenance_count
+     1954              Rampes Poste N3 Equipement de sécurité, contôle et exploitation                       93
+     1962    Passerelle Double Poste 6 Equipement de sécurité, contôle et exploitation                       93
+     1955              Rampes Poste N4 Equipement de sécurité, contôle et exploitation                       92
+     1960    Passerelle Simple Poste 3 Equipement de sécurité, contôle et exploitation                       92
+     1959    Passerelle Simple Poste 1 Equipement de sécurité, contôle et exploitation                       91
+     1961    Passerelle Double Poste 4 Equipement de sécurité, contôle et exploitation                       91
+     1930                     Zone 8-1                                          Bassin                       89
+    34616                       Zone 5                                          Bassin                       89
+    34624                      Zone 11                                          Bassin                       89
+     5611 Groupe électrogène LOT 60-70                           Equipement Electrique                       17
+
+================================================================================
+CREATING LOCATION HIERARCHY
+================================================================================
+
+Total unique site-zone combinations: 16
+Unique sites: 5
+
+Maintenance activity by site:
+        corrective_count  preventive_count  total_maintenance
+site                                                         
+TM1                 1119              4154               5273
+PPR                  488              3018               3506
+TM2                  104              1050               1154
+MEDHUB               209               681                890
+TMSA                 115               246                361
+
+================================================================================
+CREATING UNIFIED MAINTENANCE TIMELINE
+================================================================================
+
+Total maintenance events in timeline: 11184
+  Corrective: 2035
+  Preventive: 9149
+
+Date range:
+  Earliest event: 2025-01-01 04:33:00
+  Latest event: 2025-03-31 23:30:00
+
+================================================================================
+RELATIONSHIP SUMMARY
+================================================================================
+
+1. Corrective Orders with Spare Parts:
+   Count: 534
+   Percentage: 26.2%
+   Avg parts per order: 1.91
+   Avg cost per order: 1912.50
+
+2. Asset Utilization:
+   total_assets: 7090
+   assets_corrective_only: 1295
+   assets_preventive_only: 5512
+   assets_both: 283
+   avg_maintenance_per_asset: 1.5774330042313116
+
+3. Location Distribution:
+   total_sites: 5
+   total_zones: 16
+   most_active_site: TM1
+   most_active_site_count: 5273
+
+4. Timeline Statistics:
+   total_events: 11184
+   corrective_events: 2035
+   preventive_events: 9149
+   date_range_days: 89
+
+================================================================================
+SAVING INTEGRATED DATA
+================================================================================
+Saved: data\corrective_integrated.csv
+Saved: data\corrective_integrated.pkl
+Saved: data\asset_master.csv
+Saved: data\location_hierarchy.csv
+Saved: data\unified_timeline.csv
+Saved: data\unified_timeline.pkl
+
+All integrated data saved successfully!
+
+================================================================================
+DATA INTEGRATION COMPLETE
+================================================================================
+
+Next steps:
+1. Review integrated datasets in data/ folder
+2. Run phase2_exploratory_analysis.py for comprehensive EDA

@@ -1,0 +1,186 @@
+================================================================================
+PHASE 3: FEATURE ENGINEERING
+================================================================================
+
+Loaded datasets:
+  Corrective: (2035, 59)
+  Preventive: (9149, 42)
+  Spare Parts: (12573, 25)
+  Timeline: (11184, 18)
+  Assets: (7090, 11)
+
+================================================================================
+CREATING TIME-BASED FEATURES
+================================================================================
+
+1. Extracting temporal components...
+   Created: hour, day_of_week, day_of_month, month, quarter, is_weekend, is_business_hours
+
+2. Calculating time since last maintenance...
+   Created: days_since_last_maintenance (median fill: 9.81 days)
+
+================================================================================
+CREATING EQUIPMENT FEATURES
+================================================================================
+
+1. Calculating equipment failure history...
+   Created: equipment_failure_count, equipment_avg_cost, equipment_avg_duration
+
+2. Calculating family-level statistics...
+   Created: famille_failure_count, famille_avg_cost
+
+3. Creating equipment age proxy...
+   Created: equipment_age_days
+
+================================================================================
+CREATING LOCATION FEATURES
+================================================================================
+
+1. Calculating site-level statistics...
+   Created: site_failure_count, site_avg_cost
+
+2. Calculating zone-level statistics...
+   Created: zone_failure_count
+
+================================================================================
+CREATING SPARE PARTS FEATURES
+================================================================================
+
+1. Spare parts usage features (already in integrated data)...
+   Created: has_spare_parts, spare_parts_cost_ratio
+
+2. Historical spare parts patterns...
+   Created: famille_spare_parts_usage_rate
+
+================================================================================
+CREATING ANOMALY FEATURES
+================================================================================
+
+1. Encoding anomaly types...
+   Created 20 binary anomaly type features
+
+2. Anomaly recurrence patterns...
+   Created: anomaly_recurrence_count
+
+================================================================================
+CREATING URGENCY FEATURES
+================================================================================
+
+1. Encoding urgency levels...
+   Created: ['urgence_Faible', 'urgence_Fort', 'urgence_Moyen']
+
+2. Historical urgency patterns...
+   Created: famille_high_urgency_rate
+
+================================================================================
+CREATING SERVICE PROVIDER FEATURES
+================================================================================
+
+1. Provider performance metrics...
+   Created: provider_avg_time_to_closure, provider_avg_cost, provider_work_volume
+
+================================================================================
+CREATING ROLLING WINDOW FEATURES
+================================================================================
+
+1. Calculating rolling statistics (7-day and 30-day windows)...
+   Created: rolling_7d_failures, rolling_30d_failures, rolling_7d_avg_cost, rolling_30d_avg_cost
+
+================================================================================
+ENCODING CATEGORICAL VARIABLES
+================================================================================
+
+1. Label encoding for high-cardinality categories...
+   Encoded: portfolio -> portfolio_encoded
+   Encoded: site -> site_encoded
+   Encoded: zone -> zone_encoded
+   Encoded: famille -> famille_encoded
+   Encoded: groupe -> groupe_encoded
+   Encoded: prestataire -> prestataire_encoded
+   Encoded: etat -> etat_encoded
+
+   Saved label encoders to: data\features\label_encoders.pkl
+
+================================================================================
+CREATING TARGET VARIABLES
+================================================================================
+
+1. Creating binary target: will_fail_within_30_days...
+   Created: will_fail_within_30_days
+   Positive class: 384 (18.9%)
+
+2. Creating multi-class target: anomaly_type_encoded...
+   Created: anomaly_type_encoded (268 classes)
+
+3. Creating regression target: spare_parts_cost...
+   Created: spare_parts_cost_target
+
+4. Creating regression target: intervention_duration...
+   Created: intervention_duration_target
+
+5. Creating binary target: will_need_spare_parts...
+   Created: will_need_spare_parts
+   Positive class: 534 (26.2%)
+
+================================================================================
+SAVING FEATURE DATASET
+================================================================================
+
+1. Final feature dataset shape: (2035, 95)
+   Total features: 95
+
+2. Feature types:
+   Numerical features: 76
+   Categorical features: 12
+
+3. Saving feature datasets...
+   Saved: data\features\corrective_features.csv
+   Saved: data\features\corrective_features.pkl
+   Saved: data\features\feature_metadata.json
+
+4. Sample of created features:
+   - portfolio
+   - id_ordre_travail
+   - id_demande
+   - etat
+   - urgence
+   - impact_disponibilite
+   - vandalisme
+   - palliative
+   - avec_demande_pdr
+   - est_reouvert
+   - site
+   - zone
+   - famille
+   - groupe
+   - ot_fils
+   - prestataire
+   - cout_maindoeuvre
+   - cout_pdr
+   - cout_bc
+   - cout_total
+   - nombre_main_doeuvre
+   - duree_intervention_par_heure
+   - id_actif
+   - time_to_closure_hours
+   - time_to_start_hours
+   - num_spare_parts_requests
+   - total_parts_quantity
+   - total_parts_cost
+   - parts_families
+   - parts_request_status
+   ... and 65 more features
+
+================================================================================
+PHASE 3 COMPLETE
+================================================================================
+
+Feature engineering completed successfully!
+Total features created: 95
+Total samples: 2035
+
+Feature datasets saved to: data/features/
+
+Next steps:
+1. Review feature_metadata.json for feature details
+2. Proceed to Phase 4: Model Development
