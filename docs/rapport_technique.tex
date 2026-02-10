@@ -1,0 +1,450 @@
+\documentclass[12pt,a4paper]{article}
+
+% ─── Packages ───
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+\geometry{margin=2.5cm}
+\hypersetup{colorlinks=true, linkcolor=blue!60!black, urlcolor=blue!60!black, citecolor=blue!60!black}
+
+% ─── Headers ───
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small GMAO AI -- Rapport Technique}
+\fancyhead[R]{\small \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ─── Code style ───
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{gray!10},
+  frame=single,
+  breaklines=true,
+  language=Python,
+  showstringspaces=false,
+}
+
+% ─── Title ───
+\title{
+  \vspace{-1cm}
+  \textbf{GMAO AI -- Maintenance Industrielle Intelligente} \\[0.3cm]
+  \large Rapport Technique de Stage \\[0.2cm]
+  \normalsize Analyse de donnees et modeles predictifs pour la GMAO
+}
+\author{}
+\date{Fevrier 2026}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+
+\tableofcontents
+\newpage
+
+% ═══════════════════════════════════════════════════════════════
+\section{Introduction}
+% ═══════════════════════════════════════════════════════════════
+
+Ce projet de stage porte sur l'analyse des donnees issues d'un systeme de GMAO (Gestion de Maintenance Assistee par Ordinateur) couvrant 5 sites industriels. L'objectif est de construire un systeme d'aide a la decision base sur le Machine Learning, capable de :
+
+\begin{itemize}
+  \item Detecter des anomalies dans les ordres de maintenance
+  \item Predire les pannes equipement a 30 jours
+  \item Anticiper les besoins en pieces de rechange
+  \item Evaluer l'efficacite de la maintenance preventive
+  \item Fournir des recommandations operationnelles chiffrees
+\end{itemize}
+
+Le livrable final est une application web Streamlit deployee, exposant les resultats d'analyse, les visualisations et une interface de prediction interactive.
+
+% ═══════════════════════════════════════════════════════════════
+\section{Donnees}
+% ═══════════════════════════════════════════════════════════════
+
+\subsection{Sources}
+
+Trois fichiers Excel constituent les donnees brutes :
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llrr}
+\toprule
+\textbf{Fichier} & \textbf{Contenu} & \textbf{Lignes} & \textbf{Colonnes} \\
+\midrule
+Ordres de travail.xlsx & Maintenance corrective & 2\,035 & 51 \\
+OT\_Preventifs.xlsx & Maintenance preventive & 9\,149 & 40 \\
+a-w.xlsx & Demandes de pieces de rechange & 12\,573 & 22 \\
+\bottomrule
+\end{tabular}
+\caption{Datasets sources}
+\end{table}
+
+\textbf{Periode couverte :} 1\textsuperscript{er} janvier -- 31 mars 2025 (89 jours). \\
+\textbf{Sites :} TM1, PPR, TM2, MEDHUB, TMSA. \\
+\textbf{Actifs uniques :} 7\,090 equipements suivis.
+
+\subsection{Qualite des donnees}
+
+\begin{itemize}
+  \item \textbf{Correctif :} 0 doublons. Colonnes avec valeurs manquantes significatives : \texttt{cout\_bc} (100\%), \texttt{commentaire\_ouverture} (98\%), \texttt{cout\_pdr} (78\%).
+  \item \textbf{Preventif :} 0 doublons. Colonnes de rejet/commentaires majoritairement vides ($>$97\%).
+  \item \textbf{Pieces de rechange :} 437 doublons supprimes. \texttt{description} manquante a 97\%.
+\end{itemize}
+
+\subsection{Nettoyage et integration}
+
+Le pipeline de preprocessing (\texttt{src/preprocessing.py}) effectue :
+
+\begin{enumerate}
+  \item Correction de l'encodage texte (caracteres accentues)
+  \item Standardisation des formats de date
+  \item Conversion des booleens (Oui/Non $\rightarrow$ True/False)
+  \item Remplissage des couts manquants par 0
+  \item Calcul de metriques derivees : \texttt{time\_to\_closure\_hours}, \texttt{time\_to\_start\_hours}
+  \item Integration correctif--pieces de rechange (jointure sur \texttt{id\_ordre\_travail})
+  \item Construction d'un referentiel actifs (\texttt{asset\_master}) et d'une timeline unifiee
+\end{enumerate}
+
+\textbf{Note importante :} Les colonnes temporelles different entre les jeux de donnees. Le correctif utilise \texttt{date\_creation\_ot}, tandis que le preventif utilise \texttt{date\_debut} et \texttt{date\_debut\_planifiee}. Le correctif utilise \texttt{cout\_total}, le preventif \texttt{cout}. Cette difference a cause des erreurs (\texttt{KeyError}) dans les premieres versions du code et a necessite une attention particuliere lors de l'integration.
+
+% ═══════════════════════════════════════════════════════════════
+\section{Feature Engineering}
+% ═══════════════════════════════════════════════════════════════
+
+A partir des donnees nettoyees, 95 features et 5 variables cibles ont ete construites (\texttt{src/feature\_engineering.py}). Le dataset final compte 2\,035 echantillons.
+
+\subsection{Categories de features}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrl}
+\toprule
+\textbf{Categorie} & \textbf{Nb} & \textbf{Exemples} \\
+\midrule
+Temporelles & 8 & \texttt{creation\_hour}, \texttt{days\_since\_last\_maintenance} \\
+Equipement & 8 & \texttt{equipment\_failure\_count}, \texttt{equipment\_age\_days} \\
+Localisation & 3 & \texttt{site\_failure\_count}, \texttt{zone\_failure\_count} \\
+Pieces de rechange & 3 & \texttt{has\_spare\_parts}, \texttt{spare\_parts\_cost\_ratio} \\
+Anomalies & 21 & 20 indicatrices binaires + \texttt{anomaly\_recurrence\_count} \\
+Urgence & 4 & \texttt{urgence\_Fort}, \texttt{famille\_high\_urgency\_rate} \\
+Prestataire & 3 & \texttt{provider\_avg\_cost}, \texttt{provider\_work\_volume} \\
+Fenetres glissantes & 4 & \texttt{rolling\_7d\_failures}, \texttt{rolling\_30d\_avg\_cost} \\
+Categoriques encodees & 7 & \texttt{site\_encoded}, \texttt{famille\_encoded} (label encoding) \\
+\bottomrule
+\end{tabular}
+\caption{Repartition des 95 features par categorie}
+\end{table}
+
+\subsection{Variables cibles}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llr}
+\toprule
+\textbf{Variable} & \textbf{Type} & \textbf{Taux positif} \\
+\midrule
+\texttt{will\_fail\_within\_30\_days} & Classification binaire & 18.9\% \\
+\texttt{will\_need\_spare\_parts} & Classification binaire & 26.2\% \\
+\texttt{anomaly\_type\_encoded} & Classification multi-classe & 268 types \\
+\texttt{spare\_parts\_cost\_target} & Regression & -- \\
+\texttt{intervention\_duration\_target} & Regression & -- \\
+\bottomrule
+\end{tabular}
+\caption{Variables cibles construites}
+\end{table}
+
+% ═══════════════════════════════════════════════════════════════
+\section{Modeles}
+% ═══════════════════════════════════════════════════════════════
+
+Trois modeles ont ete developpes, tous implementes dans \texttt{src/models/} avec une API uniforme (\texttt{fit}, \texttt{predict}, \texttt{save}, \texttt{load}).
+
+\subsection{Detection d'anomalies (non supervise)}
+
+\textbf{Approche :} Ensemble de deux methodes non supervisees avec vote par consensus.
+
+\begin{itemize}
+  \item \textbf{Isolation Forest} : isole les points aberrants en partitionnant aleatoirement l'espace des features. Les anomalies sont isolees plus rapidement (profondeur d'arbre faible).
+  \item \textbf{One-Class SVM} : apprend la frontiere de la distribution ``normale'' dans un espace de haute dimension (noyau RBF).
+\end{itemize}
+
+\textbf{Consensus :} Un echantillon est marque comme anomalie si \textit{au moins une} des deux methodes le detecte. L'anomalie est dite ``haute confiance'' si les deux methodes concordent.
+
+16 features numeriques sont utilisees : couts, durees, metriques equipement, fenetres glissantes.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lr}
+\toprule
+\textbf{Metrique} & \textbf{Valeur} \\
+\midrule
+Echantillons totaux & 2\,035 \\
+Anomalies (consensus) & 268 (13.2\%) \\
+Anomalies haute confiance & 140 (6.9\%) \\
+Accord entre methodes & 93.7\% \\
+\bottomrule
+\end{tabular}
+\caption{Resultats de la detection d'anomalies}
+\end{table}
+
+Les anomalies detectees presentent un cout moyen 14x superieur (45\,454 vs 3\,272 EUR), une duree d'intervention 7.6x superieure et un temps de cloture 7.1x superieur aux ordres normaux.
+
+\subsection{Prediction de panne a 30 jours}
+
+\textbf{Algorithme :} Random Forest Classifier (200 arbres, profondeur max 12, \texttt{class\_weight='balanced'}).
+
+\textbf{Justification :} Le Random Forest a ete choisi pour sa robustesse face aux desequilibres de classes (18.9\% de positifs), son interpretabilite via les importances de features, et sa capacite a capturer des interactions non lineaires sans risque important de surapprentissage.
+
+\textbf{Preprocessing :} Standardisation (StandardScaler), split 80/20 stratifie.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrr}
+\toprule
+\textbf{Metrique} & \textbf{Test} & \textbf{CV (5-fold)} \\
+\midrule
+Precision & 0.756 & -- \\
+Recall & 0.844 & -- \\
+F1-score & 0.797 & -- \\
+ROC AUC & 0.973 & 0.971 $\pm$ 0.005 \\
+Accuracy & 0.919 & -- \\
+\bottomrule
+\end{tabular}
+\caption{Performance du modele de prediction de panne}
+\end{table}
+
+\textbf{Matrice de confusion (test) :}
+\begin{table}[H]
+\centering
+\begin{tabular}{l|rr}
+ & \textbf{Predit: Non} & \textbf{Predit: Oui} \\
+\midrule
+\textbf{Reel: Non} & 309 & 21 \\
+\textbf{Reel: Oui} & 12 & 65 \\
+\end{tabular}
+\end{table}
+
+\textbf{Top 5 features :}
+\begin{enumerate}
+  \item \texttt{equipment\_failure\_count} (37.0\%) -- nombre de pannes historiques
+  \item \texttt{anomaly\_recurrence\_count} (17.0\%) -- recurrence des anomalies
+  \item \texttt{equipment\_age\_days} (2.9\%) -- age de l'equipement
+  \item \texttt{rolling\_30d\_failures} (2.5\%) -- pannes dans les 30 derniers jours
+  \item \texttt{famille\_avg\_cost} (2.3\%) -- cout moyen de la famille
+\end{enumerate}
+
+La predominance de \texttt{equipment\_failure\_count} confirme l'intuition que les equipements ayant deja connu des pannes sont les plus a risque de recidive.
+
+\subsection{Prediction de besoin en pieces de rechange}
+
+\textbf{Algorithme :} Random Forest Classifier (200 arbres, profondeur max 10, \texttt{class\_weight='balanced'}).
+
+\textbf{Note sur le choix d'algorithme :} Ce modele utilisait initialement un \texttt{GradientBoostingClassifier}, qui offrait des performances legerement superieures (F1 = 0.948). Cependant, lors du deploiement sur Streamlit Cloud (Linux), le modele serialise (pickle) n'etait pas compatible avec l'environnement de production. Le \texttt{GradientBoostingClassifier} de scikit-learn utilise en interne des fonctions de perte compilees en Cython (\texttt{CyHalfBinomialLoss}), dont les binaires sont specifiques a l'OS et a l'architecture. Un modele entraine sous Windows ne peut pas etre deserialise sous Linux, meme avec la meme version de scikit-learn. Le passage a \texttt{RandomForestClassifier}, qui ne serialise que des objets Python/NumPy standards, a resolu le probleme avec une perte de performance negligeable.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrr}
+\toprule
+\textbf{Metrique} & \textbf{Test} & \textbf{CV (5-fold)} \\
+\midrule
+Precision & 0.934 & -- \\
+Recall & 0.925 & -- \\
+F1-score & 0.930 & -- \\
+ROC AUC & 0.989 & 0.990 $\pm$ 0.004 \\
+Accuracy & 0.963 & -- \\
+\bottomrule
+\end{tabular}
+\caption{Performance du modele de prediction de pieces de rechange}
+\end{table}
+
+\textbf{Top 5 features :}
+\begin{enumerate}
+  \item \texttt{cout\_pdr} (20.2\%) -- cout historique des pieces
+  \item \texttt{duree\_intervention\_par\_heure} (10.2\%) -- duree de l'intervention
+  \item \texttt{cout\_total} (10.2\%) -- cout total de l'ordre
+  \item \texttt{cout\_maindoeuvre} (7.3\%) -- cout de main d'oeuvre
+  \item \texttt{rolling\_7d\_avg\_cost} (6.9\%) -- cout moyen sur 7 jours glissants
+\end{enumerate}
+
+% ═══════════════════════════════════════════════════════════════
+\section{Analyses complementaires}
+% ═══════════════════════════════════════════════════════════════
+
+\subsection{Efficacite de la maintenance preventive}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lr}
+\toprule
+\textbf{Indicateur} & \textbf{Valeur} \\
+\midrule
+Taux de conformite (dans les delais) & 26.5\% \\
+Ecart moyen par rapport au planning & 23.7 jours \\
+Ecart median & 7.6 jours \\
+Intervalle optimal calcule & 43 jours \\
+ROI de la maintenance preventive & $-$90.4\% \\
+\bottomrule
+\end{tabular}
+\caption{Indicateurs d'efficacite de la maintenance preventive}
+\end{table}
+
+Le ROI negatif s'explique par le cout tres eleve de la maintenance preventive (410M EUR sur 89 jours) par rapport aux couts correctifs evites (40M EUR estimes). Cela suggere soit un surinvestissement preventif, soit une mauvaise allocation des ressources. Seules 26.5\% des interventions preventives sont realisees dans les delais prevus.
+
+\subsection{Gestion des pieces de rechange}
+
+\begin{itemize}
+  \item \textbf{Analyse Pareto :} 144 articles (11\% du total) representent 80\% des couts.
+  \item \textbf{Taux de rupture de stock :} 49\% des demandes concernent des articles en rupture.
+  \item \textbf{Taux de rejet :} 16.4\% des demandes sont rejetees.
+  \item \textbf{Articles a reapprovisionner :} 911 articles identifies.
+  \item \textbf{Cout previsionnel 90 jours :} 1\,256\,421 EUR.
+\end{itemize}
+
+Les familles les plus touchees par les ruptures sont la plomberie (1\,755), l'electricite (1\,546) et la menuiserie (1\,349).
+
+% ═══════════════════════════════════════════════════════════════
+\section{Architecture et deploiement}
+% ═══════════════════════════════════════════════════════════════
+
+\subsection{Architecture logicielle}
+
+Le projet suit une architecture modulaire :
+
+\begin{lstlisting}
+gmao-ai-project/
+  src/
+    preprocessing.py          # Chargement, nettoyage, integration
+    feature_engineering.py    # Construction des 95 features
+    models/
+      anomaly_detector.py     # Isolation Forest + One-Class SVM
+      failure_predictor.py    # RandomForest (panne + pieces)
+      effectiveness.py        # ROI, conformite, intervalles
+      spare_parts_forecaster.py  # Pareto, previsions, reapprovisionnement
+  app/
+    streamlit_app.py          # Dashboard interactif (7 pages)
+  run_pipeline.py             # Pipeline en 4 etapes
+\end{lstlisting}
+
+Chaque module de modele expose une API uniforme : \texttt{fit()}, \texttt{predict()}, \texttt{save()}, \texttt{load()}, permettant la reutilisation et le re-entrainement independant.
+
+Le pipeline complet s'execute via :
+\begin{lstlisting}[language=bash]
+python run_pipeline.py          # Toutes les etapes
+python run_pipeline.py --step 3 # Une etape specifique
+\end{lstlisting}
+
+\subsection{Application web}
+
+Le dashboard Streamlit comprend 7 sections :
+
+\begin{enumerate}
+  \item \textbf{Accueil} -- Presentation du projet et guide de navigation
+  \item \textbf{Vue d'ensemble} -- KPIs et resume des performances
+  \item \textbf{Exploration des donnees} -- Qualite, tendances, MTBF, Pareto, anomalies
+  \item \textbf{Feature Engineering} -- Visualisation des 95 features et correlations
+  \item \textbf{Modeles \& Analyses} -- Metriques, matrices de confusion, importances
+  \item \textbf{Prediction Interactive} -- Formulaire de saisie avec predictions en temps reel
+  \item \textbf{Recommandations} -- Constats et ROI des initiatives proposees
+\end{enumerate}
+
+La section \textbf{Prediction Interactive} permet a l'utilisateur de saisir les parametres d'un ordre de travail (site, famille, cout, urgence, etc.) et d'obtenir trois predictions simultanees : risque de panne, besoin en pieces de rechange, et score d'anomalie. Les modeles sont charges via \texttt{@st.cache\_resource} pour un chargement unique. Les features manquantes (les modeles attendent 62--67 features) sont completees par les medianes historiques.
+
+\subsection{Deploiement}
+
+L'application est deployee sur \textbf{Streamlit Community Cloud}, connectee a un depot GitHub prive. Les donnees traitees et les modeles entraines (.pkl) sont inclus dans le depot.
+
+\textbf{Contrainte de portabilite :} Les fichiers pickle sont sensibles a l'environnement. Les fichiers \texttt{.pkl} generes avec une version de NumPy provoquent des erreurs \texttt{ModuleNotFoundError} si charges avec une version differente. De meme, les objets Cython de scikit-learn (comme \texttt{CyHalfBinomialLoss} dans \texttt{GradientBoostingClassifier}) ne sont pas portables entre systemes d'exploitation. Les solutions adoptees :
+
+\begin{itemize}
+  \item Fallback systematique vers CSV pour les donnees (au lieu de pickle)
+  \item Utilisation de \texttt{RandomForestClassifier} au lieu de \texttt{GradientBoostingClassifier} pour la portabilite des modeles
+  \item Epinglage de la version scikit-learn (\texttt{==1.5.1}) dans \texttt{requirements.txt}
+\end{itemize}
+
+% ═══════════════════════════════════════════════════════════════
+\section{Recommandations}
+% ═══════════════════════════════════════════════════════════════
+
+\begin{table}[H]
+\centering
+\begin{tabular}{p{5cm}p{8cm}}
+\toprule
+\textbf{Constat} & \textbf{Recommandation} \\
+\midrule
+Conformite preventive a 26.5\% & Renforcer le suivi des calendriers et la responsabilite des prestataires \\
+MTBF equipements securite : 7 jours & Augmenter la frequence d'inspection ou envisager le remplacement \\
+Performance prestataires : ecart x25 & Renegocier les contrats avec les prestataires sous-performants \\
+11\% des articles = 80\% des couts & Concentrer l'optimisation stock sur les 144 articles critiques \\
+267 actifs avec pannes recurrentes & Analyser les causes racines, planifier le remplacement \\
+Taux de rupture stock a 49\% & Revoir les seuils de reapprovisionnement des familles critiques \\
+\bottomrule
+\end{tabular}
+\caption{Recommandations operationnelles}
+\end{table}
+
+% ═══════════════════════════════════════════════════════════════
+\section{Limites et perspectives}
+% ═══════════════════════════════════════════════════════════════
+
+\subsection{Limites}
+
+\begin{itemize}
+  \item \textbf{Volume temporel :} 89 jours de donnees limitent la robustesse des previsions et empechent la modelisation de saisonnalites.
+  \item \textbf{Absence de donnees capteur :} Les modeles se basent uniquement sur les ordres de travail historiques, sans telemetrie equipement (vibrations, temperature, etc.).
+  \item \textbf{Target leakage potentiel :} La feature \texttt{equipment\_failure\_count} domine la prediction de panne (37\%). Cette information est disponible a l'entrainement car calculee sur l'historique complet, mais en production, seul l'historique passe serait disponible. Le risque est attenue par la validation croisee stable (AUC CV = 0.971).
+  \item \textbf{Desequilibre des classes :} 18.9\% de positifs pour les pannes, 26.2\% pour les pieces. Le \texttt{class\_weight='balanced'} compense partiellement.
+\end{itemize}
+
+\subsection{Perspectives}
+
+\begin{itemize}
+  \item Integration de donnees capteurs IoT pour une maintenance predictive basee sur l'etat reel des equipements
+  \item Extension de la periode de donnees pour capturer les tendances saisonnieres
+  \item Ajout de modeles de regression (cout, duree) en complement des classifieurs
+  \item Mise en place d'un systeme d'alertes automatiques base sur les predictions du modele
+  \item Connection directe avec le systeme GMAO pour des predictions en temps reel
+\end{itemize}
+
+% ═══════════════════════════════════════════════════════════════
+\section{Conclusion}
+% ═══════════════════════════════════════════════════════════════
+
+Ce projet a permis de construire un systeme complet d'analyse et de prediction pour la maintenance industrielle, partant de donnees brutes jusqu'a une application web deployee. Les modeles developpes atteignent des performances elevees (AUC $>$ 0.97 pour la prediction de panne, AUC $>$ 0.99 pour les pieces de rechange) et l'analyse exploratoire a mis en evidence plusieurs axes d'amelioration operationnelle concrets, notamment la conformite preventive (26.5\%) et la gestion des stocks (49\% de ruptures).
+
+L'architecture modulaire adoptee (\texttt{src/} avec API uniforme) permet la reutilisation des composants et le re-entrainement independant des modeles au fur et a mesure de l'accumulation de nouvelles donnees.
+
+% ═══════════════════════════════════════════════════════════════
+\section*{Stack technique}
+% ═══════════════════════════════════════════════════════════════
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Composant} & \textbf{Technologie} \\
+\midrule
+Langage & Python 3.12 \\
+Donnees & pandas, NumPy, openpyxl \\
+Machine Learning & scikit-learn 1.5.1 \\
+Visualisation & Plotly, Streamlit \\
+Deploiement & Streamlit Community Cloud \\
+Versioning & Git / GitHub (repo prive) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}
