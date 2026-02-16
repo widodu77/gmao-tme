@@ -171,7 +171,7 @@ Categoriques encodees & 7 & \texttt{site\_encoded}, \texttt{famille\_encoded} (l
 \section{Modeles}
 % ═══════════════════════════════════════════════════════════════
 
-Trois modeles ont ete developpes, tous implementes dans \texttt{src/models/} avec une API uniforme (\texttt{fit}, \texttt{predict}, \texttt{save}, \texttt{load}).
+Trois modeles ont ete developpes, tous implementes dans \texttt{src/models/} avec une API uniforme (\texttt{fit}, \texttt{predict}, \texttt{save}, \texttt{load}). Le premier (section 4.1) est un modele \textbf{non supervise} : il ne dispose d'aucune etiquette ``anomalie'' dans les donnees et apprend a detecter les comportements inhabituels a partir de la distribution des features. Les deux suivants (sections 4.2 et 4.3) sont des modeles \textbf{supervises} : ils s'entrainent sur des variables cibles binaires construites a partir de l'historique (\texttt{will\_fail\_within\_30\_days}, \texttt{will\_need\_spare\_parts}) et apprennent a reproduire cette relation sur des donnees inedites.
 
 \subsection{Detection d'anomalies (non supervise)}
 
@@ -217,7 +217,9 @@ Les anomalies detectees presentent un cout moyen 14x superieur (45\,454 vs 3\,27
 \caption{Comparaison des moyennes entre ordres normaux et anomalies. Les anomalies presentent des valeurs significativement superieures sur les trois metriques cles.}
 \end{figure}
 
-\subsection{Prediction de panne a 30 jours}
+\textbf{Validation :} Etant non supervise, ce modele ne dispose pas de metriques classiques (precision, recall). Sa fiabilite repose sur trois elements : (1) le taux d'accord de 93.7\% entre deux methodes mathematiquement independantes, (2) la separation statistique nette entre les groupes normal/anomalie (differences de 7x a 14x sur les metriques cles), et (3) la coherence avec le sens metier --- un ordre coutant 45\,000 EUR avec 300+ heures d'intervention est objectivement anormal par rapport a une mediane de 230 EUR et 2.5 heures. L'absence de verite terrain reste une limite inherente a l'approche non supervisee.
+
+\subsection{Prediction de panne a 30 jours (supervise)}
 
 \textbf{Algorithme :} Random Forest Classifier (200 arbres, profondeur max 12, \texttt{class\_weight='balanced'}).
 
@@ -263,11 +265,13 @@ Accuracy & 0.919 & -- \\
 
 La predominance de \texttt{equipment\_failure\_count} confirme l'intuition que les equipements ayant deja connu des pannes sont les plus a risque de recidive.
 
-\subsection{Prediction de besoin en pieces de rechange}
+\subsection{Prediction de besoin en pieces de rechange (supervise)}
 
-\textbf{Algorithme :} Random Forest Classifier (200 arbres, profondeur max 10, {class\_weight='balanced'}).
+\textbf{Algorithme :} Gradient Boosting Classifier (150 arbres, profondeur max 8, learning rate 0.1).
 
-\textbf{Note sur le choix d'algorithme :} Ce modele utilisait initialement un \texttt{GradientBoostingClassifier}, qui offrait des performances legerement superieures (F1 = 0.948). Cependant, lors du deploiement sur Streamlit Cloud (Linux), le modele serialise (pickle) n'etait pas compatible avec l'environnement de production. Le \texttt{GradientBoostingClassifier} de scikit-learn utilise en interne des fonctions de perte compilees en Cython (\texttt{CyHalfBinomialLoss}), dont les binaires sont specifiques a l'OS et a l'architecture. Un modele entraine sous Windows ne peut pas etre deserialise sous Linux, meme avec la meme version de scikit-learn. Le passage a \texttt{RandomForestClassifier}, qui ne serialise que des objets Python/NumPy standards, a resolu le probleme avec une perte de performance negligeable.
+\textbf{Justification :} Le Gradient Boosting construit ses arbres de maniere sequentielle, chaque arbre corrigeant les erreurs du precedent. Cette approche iterative le rend particulierement performant sur les problemes de classification tabulaire avec des features de natures differentes (couts, durees, indicatrices). Il surpasse generalement le Random Forest lorsque les donnees presentent des relations complexes entre features, au prix d'un temps d'entrainement legerement superieur.
+
+\textbf{Contrainte de deploiement :} Le \texttt{GradientBoostingClassifier} de scikit-learn utilise en interne des fonctions de perte compilees en Cython (\texttt{CyHalfBinomialLoss}). Ces binaires sont specifiques a l'OS et a l'architecture : un modele serialise (pickle) sous Windows ne peut pas etre charge sous Linux, meme avec la meme version de scikit-learn. Pour contourner ce probleme, le modele est \textbf{re-entraine a la volee} au demarrage de l'application Streamlit, a partir du dataset de features (2\,035 lignes). L'entrainement prend environ 2 secondes et est mis en cache (\texttt{@st.cache\_resource}) pour ne s'executer qu'une seule fois par session.
 
 \begin{table}[H]
 \centering
@@ -275,11 +279,11 @@ La predominance de \texttt{equipment\_failure\_count} confirme l'intuition que l
 \toprule
 \textbf{Metrique} & \textbf{Test} & \textbf{CV (5-fold)} \\
 \midrule
-Precision & 0.934 & -- \\
+Precision & 0.961 & -- \\
 Recall & 0.925 & -- \\
-F1-score & 0.930 & -- \\
-ROC AUC & 0.989 & 0.990 $\pm$ 0.004 \\
-Accuracy & 0.963 & -- \\
+F1-score & 0.943 & -- \\
+ROC AUC & 0.990 & 0.989 $\pm$ 0.006 \\
+Accuracy & 0.971 & -- \\
 \bottomrule
 \end{tabular}
 \caption{Performance du modele de prediction de pieces de rechange}
@@ -287,12 +291,14 @@ Accuracy & 0.963 & -- \\
 
 \textbf{Top 5 features :}
 \begin{enumerate}
-  \item \texttt{cout\_pdr} (20.2\%) -- cout historique des pieces
-  \item \texttt{duree\_intervention\_par\_heure} (10.2\%) -- duree de l'intervention
-  \item \texttt{cout\_total} (10.2\%) -- cout total de l'ordre
-  \item \texttt{cout\_maindoeuvre} (7.3\%) -- cout de main d'oeuvre
-  \item \texttt{rolling\_7d\_avg\_cost} (6.9\%) -- cout moyen sur 7 jours glissants
+  \item \texttt{cout\_pdr} (79.3\%) -- cout historique des pieces de rechange
+  \item \texttt{famille\_spare\_parts\_usage\_rate} (5.7\%) -- taux d'utilisation pieces par famille
+  \item \texttt{time\_to\_closure\_hours} (2.6\%) -- temps de cloture
+  \item \texttt{duree\_intervention\_par\_heure} (2.5\%) -- duree de l'intervention
+  \item \texttt{groupe\_encoded} (1.9\%) -- groupe d'equipement
 \end{enumerate}
+
+La forte dominance de \texttt{cout\_pdr} (79.3\%) est caracteristique du Gradient Boosting : les premiers arbres capturent l'essentiel du signal, les suivants affinent les residus. Cela indique que le cout historique des pieces est de loin le meilleur predicteur du besoin futur.
 
 % ═══════════════════════════════════════════════════════════════
 \section{Analyses complementaires}
@@ -381,13 +387,14 @@ La section \textbf{Prediction Interactive} permet a l'utilisateur de saisir les 
 
 L'application est deployee sur \textbf{Streamlit Community Cloud}, connectee a un depot GitHub prive. Les donnees traitees et les modeles entraines (.pkl) sont inclus dans le depot.
 
-\textbf{Contrainte de portabilite :} Les fichiers pickle sont sensibles a l'environnement. Les fichiers \texttt{.pkl} generes avec une version de NumPy provoquent des erreurs \texttt{ModuleNotFoundError} si charges avec une version differente. De meme, les objets Cython de scikit-learn (comme \texttt{CyHalfBinomialLoss} dans \texttt{GradientBoostingClassifier}) ne sont pas portables entre systemes d'exploitation. Les solutions adoptees :
+\textbf{Contrainte de portabilite :} Les fichiers pickle sont sensibles a l'environnement. Deux problemes ont ete rencontres :
 
-\begin{itemize}
-  \item Fallback systematique vers CSV pour les donnees (au lieu de pickle)
-  \item Utilisation de \texttt{RandomForestClassifier} au lieu de \texttt{GradientBoostingClassifier} pour la portabilite des modeles
-  \item Epinglage de la version scikit-learn (\texttt{==1.5.1}) dans \texttt{requirements.txt}
-\end{itemize}
+\begin{enumerate}
+  \item \textbf{NumPy :} Les fichiers \texttt{.pkl} generes avec une version de NumPy provoquent des erreurs \texttt{ModuleNotFoundError: numpy.\_core.numeric} si charges avec une version differente. \textit{Solution :} fallback systematique vers CSV pour les donnees.
+  \item \textbf{scikit-learn / Cython :} Le \texttt{GradientBoostingClassifier} serialise des objets Cython compiles (\texttt{CyHalfBinomialLoss}) qui sont specifiques a l'OS. Un modele entraine sous Windows ne peut pas etre deserialise sous Linux. \textit{Solution :} re-entrainement a la volee au demarrage de l'application ($\sim$2 secondes pour 2\,035 echantillons), mis en cache par \texttt{@st.cache\_resource}.
+\end{enumerate}
+
+Les modeles Random Forest (panne, anomalies) et leurs scalers sont charges normalement depuis les fichiers \texttt{.pkl}, car ils ne contiennent pas d'objets Cython. La version de scikit-learn est epinglee a \texttt{==1.5.1} dans \texttt{requirements.txt}.
 
 % ═══════════════════════════════════════════════════════════════
 \section{Recommandations}

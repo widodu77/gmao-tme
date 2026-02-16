@@ -100,7 +100,13 @@ def load_models():
 
     try:
         from src.models.failure_predictor import SparePartsPredictor
-        loaded['spare_parts'] = SparePartsPredictor.load(models_dir)
+        # GradientBoosting pickles are not portable across OS (Cython binaries).
+        # Train on-the-fly instead — only 2035 rows, takes ~2 seconds.
+        features_dir = project_root / 'data' / 'features'
+        features_df = pd.read_csv(features_dir / 'corrective_features.csv')
+        sp = SparePartsPredictor()
+        sp.fit(features_df)
+        loaded['spare_parts'] = sp
     except Exception as e:
         loaded['spare_parts_error'] = str(e)
 

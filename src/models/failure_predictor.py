@@ -127,9 +127,9 @@ class SparePartsPredictor:
     """Predict whether a maintenance order will require spare parts."""
 
     def __init__(self):
-        self.model = RandomForestClassifier(
-            n_estimators=200, max_depth=10, min_samples_split=10,
-            class_weight='balanced', random_state=42, n_jobs=-1,
+        self.model = GradientBoostingClassifier(
+            n_estimators=150, max_depth=8, learning_rate=0.1,
+            random_state=42,
         )
         self.scaler = StandardScaler()
         self.feature_cols = None
