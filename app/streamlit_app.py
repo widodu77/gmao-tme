@@ -941,60 +941,251 @@ def show_models(data):
 
 def show_recommendations(data):
     st.markdown('<p class="sub-header">Recommandations</p>', unsafe_allow_html=True)
+    st.markdown("Recommandations basees sur l'analyse des donnees reelles (Jan-Mar 2025).")
+
+    corr = data['corrective']
+    sp = data['spare_parts']
+
+    # ── Compute real stats ──
+    # Recurring equipment
+    equip_f = corr.groupby('id_actif').agg(nb=('id_ordre_travail', 'count'), cout=('cout_total', 'sum')).sort_values('nb', ascending=False)
+    recurring_3plus = equip_f[equip_f['nb'] >= 3]
+    recurring_cost = recurring_3plus['cout'].sum()
+    recurring_pct = recurring_cost / corr['cout_total'].sum() * 100
+
+    # Anomaly cost impact
+    if 'anomaly_predictions' in data:
+        ap = data['anomaly_predictions']
+        anom_cost = ap[ap['anomaly_consensus'] == 1]['cout_total'].sum()
+        total_cost = ap['cout_total'].sum()
+        anom_pct = anom_cost / total_cost * 100
+    else:
+        anom_cost, anom_pct = 0, 0
+
+    # Stockouts
+    stockout = sp[sp['quantite_dispo'] == 0] if 'quantite_dispo' in sp.columns else pd.DataFrame()
+    stockout_cost = stockout['cout_total'].sum() if len(stockout) > 0 else 0
+    stockout_pct = len(stockout) / len(sp) * 100 if len(sp) > 0 else 0
+
+    # Provider performance
+    prov = corr.groupby('prestataire').agg(
+        nb=('id_ordre_travail', 'count'),
+        cout_moyen=('cout_total', 'mean'),
+        duree=('time_to_closure_hours', 'mean')
+    ).sort_values('nb', ascending=False)
+    fastest = prov['duree'].min()
+    slowest = prov['duree'].max()
+    provider_ratio = slowest / fastest if fastest > 0 else 0
+
+    # MTBF
+    corr_sorted = corr.copy().sort_values(['id_actif', 'date_creation_ot'])
+    corr_sorted['days_bf'] = corr_sorted.groupby('id_actif')['date_creation_ot'].diff().dt.total_seconds() / 86400
+    mtbf = corr_sorted.groupby('famille')['days_bf'].agg(['mean', 'count']).dropna()
+    mtbf_critical = mtbf[mtbf['count'] >= 5].sort_values('mean').head(5)
+
+    # ── Section 1: Anomalies ──
+    st.markdown("---")
+    st.markdown("### 1. Impact des anomalies sur les couts")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Ordres anomalies", f"{len(ap[ap['anomaly_consensus']==1]) if 'anomaly_predictions' in data else 0}")
+    c2.metric("Cout des anomalies", f"{anom_cost:,.0f} EUR")
+    c3.metric("Part du cout total", f"{anom_pct:.1f}%")
+
+    st.markdown(f"""
+    <div class="warning-box">
+    <b>Constat :</b> {anom_pct:.0f}% du cout total de maintenance corrective est concentre sur seulement
+    {len(ap[ap['anomaly_consensus']==1]) if 'anomaly_predictions' in data else 0} ordres detectes comme anomalies
+    (cout moyen 14x superieur a la normale).<br><br>
+    <b>Recommandation :</b> Mettre en place une revue systematique des ordres dont le cout depasse 10 000 EUR
+    ou la duree depasse 100 heures. Une reduction de 50% des anomalies representerait une economie de
+    <b>{anom_cost*0.5:,.0f} EUR</b> sur 89 jours.
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Section 2: Equipements recurrents ──
+    st.markdown("---")
+    st.markdown("### 2. Equipements a pannes recurrentes")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Equipements (3+ pannes)", f"{len(recurring_3plus)}")
+    c2.metric("Cout cumule", f"{recurring_cost:,.0f} EUR")
+    c3.metric("Part du cout correctif", f"{recurring_pct:.1f}%")
+
+    # Top 10 recurring equipment table
+    top_recur = corr.groupby(['id_actif', 'famille', 'site']).agg(
+        nb_pannes=('id_ordre_travail', 'count'), cout_total=('cout_total', 'sum')
+    ).sort_values('nb_pannes', ascending=False).head(10).reset_index()
+    top_recur.columns = ['ID Actif', 'Famille', 'Site', 'Nb Pannes', 'Cout Total']
+
+    st.dataframe(top_recur, use_container_width=True, column_config={
+        'Cout Total': st.column_config.NumberColumn(format="%.0f EUR"),
+    })
+
+    st.markdown(f"""
+    <div class="warning-box">
+    <b>Constat :</b> {len(recurring_3plus)} equipements concentrent {recurring_pct:.0f}% du cout correctif total
+    avec 3 pannes ou plus en 89 jours.<br><br>
+    <b>Recommandation :</b> Analyser les causes racines des 10 equipements ci-dessus. Envisager le remplacement
+    pour les actifs dont le cout cumule de reparation depasse le cout de remplacement.
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Section 3: Fiabilite (MTBF) ──
+    st.markdown("---")
+    st.markdown("### 3. Familles d'equipements les moins fiables")
+
+    if len(mtbf_critical) > 0:
+        mtbf_df = mtbf_critical.reset_index()
+        mtbf_df.columns = ['Famille', 'MTBF (jours)', 'Observations']
+        mtbf_df['MTBF (jours)'] = mtbf_df['MTBF (jours)'].round(1)
+
+        fig = px.bar(mtbf_df, y='Famille', x='MTBF (jours)', orientation='h',
+                     title='Familles avec le MTBF le plus bas', color='MTBF (jours)',
+                     color_continuous_scale='RdYlGn')
+        fig.update_layout(height=300)
+        st.plotly_chart(fig, use_container_width=True)
+
+        worst_fam = mtbf_df.iloc[0]['Famille']
+        worst_mtbf = mtbf_df.iloc[0]['MTBF (jours)']
+        st.markdown(f"""
+        <div class="warning-box">
+        <b>Constat :</b> La famille "{worst_fam}" a un MTBF de seulement {worst_mtbf} jours,
+        signifiant une panne tous les {worst_mtbf:.0f} jours en moyenne.<br><br>
+        <b>Recommandation :</b> Augmenter la frequence d'inspection preventive pour les familles
+        dont le MTBF est inferieur a 15 jours. Pour les clotures (MTBF=8j), envisager un remplacement
+        par des materiaux plus resistants.
+        </div>
+        """, unsafe_allow_html=True)
+
+    # ── Section 4: Performance prestataires ──
+    st.markdown("---")
+    st.markdown("### 4. Performance des prestataires")
+
+    prov_display = prov.head(8).reset_index()
+    prov_display.columns = ['Prestataire', 'Nb Ordres', 'Cout Moyen', 'Delai Cloture (h)']
 
     c1, c2 = st.columns(2)
-
     with c1:
-        st.markdown("### Constats Critiques")
-
-        st.markdown('<div class="warning-box">', unsafe_allow_html=True)
-        st.markdown("**1. Conformite preventive: 26.5%**")
-        st.markdown("Ameliorer le suivi des calendriers et la responsabilite des prestataires")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        st.markdown('<div class="warning-box">', unsafe_allow_html=True)
-        st.markdown("**2. Fiabilite equipements securite: MTBF ~7 jours**")
-        st.markdown("Augmenter la frequence d'inspection ou remplacer les equipements")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        st.markdown('<div class="warning-box">', unsafe_allow_html=True)
-        st.markdown("**3. Performance prestataires: ecart x25**")
-        st.markdown("Renegocier avec les prestataires sous-performants")
-        st.markdown('</div>', unsafe_allow_html=True)
-
+        fig = px.bar(prov_display, x='Prestataire', y='Delai Cloture (h)',
+                     title='Delai moyen de cloture par prestataire', color='Delai Cloture (h)',
+                     color_continuous_scale='RdYlGn_r')
+        fig.update_layout(height=350)
+        st.plotly_chart(fig, use_container_width=True)
     with c2:
-        st.markdown("### Opportunites d'Optimisation")
+        fig = px.scatter(prov_display, x='Delai Cloture (h)', y='Cout Moyen', size='Nb Ordres',
+                         hover_data=['Prestataire'], title='Cout vs Delai (taille = volume)',
+                         color='Cout Moyen', color_continuous_scale='Reds')
+        fig.update_layout(height=350)
+        st.plotly_chart(fig, use_container_width=True)
 
-        st.markdown('<div class="success-box">', unsafe_allow_html=True)
-        st.markdown("**1. Stock pieces:** 11% articles = 80% couts")
-        st.markdown("Concentrer l'optimisation sur 144 articles critiques")
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="warning-box">
+    <b>Constat :</b> L'ecart de performance entre prestataires est de x{provider_ratio:.0f}
+    (de {fastest:.0f}h a {slowest:.0f}h en delai de cloture moyen).<br><br>
+    <b>Recommandation :</b> Renegocier les contrats avec les prestataires dont le delai moyen depasse 500h.
+    Redistribuer les ordres vers les prestataires les plus performants quand c'est possible.
+    </div>
+    """, unsafe_allow_html=True)
 
-        st.markdown('<div class="success-box">', unsafe_allow_html=True)
-        st.markdown("**2. Maintenance predictive:** F1=0.79, AUC=0.97")
-        st.markdown("Deployer le modele pour reduire les reparations d'urgence de ~30%")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        st.markdown('<div class="success-box">', unsafe_allow_html=True)
-        st.markdown("**3. Pannes recurrentes:** 267 actifs avec pannes multiples")
-        st.markdown("Investiguer les causes racines, envisager le remplacement")
-        st.markdown('</div>', unsafe_allow_html=True)
-
+    # ── Section 5: Ruptures de stock ──
     st.markdown("---")
-    st.markdown("### ROI Estime des Recommandations")
+    st.markdown("### 5. Gestion des pieces de rechange")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Taux de rupture", f"{stockout_pct:.0f}%")
+    c2.metric("Cout des ruptures", f"{stockout_cost:,.0f} EUR")
+    c3.metric("Articles critiques (Pareto 80%)", "144 / 1 305")
 
-    roi_data = pd.DataFrame({
-        'Initiative': ['Optimisation stock', 'Maintenance predictive', 'Performance prestataires', 'Remplacement equipements'],
-        'Economies attendues': [250000, 400000, 300000, 200000],
-        'Cout implementation': [50000, 150000, 20000, 500000],
-        'Delai': ['3 mois', '6 mois', '1 mois', '12 mois']
+    if len(stockout) > 0:
+        stockout_fam = stockout.groupby('famille')['cout_total'].agg(['sum', 'count']).sort_values('sum', ascending=False).head(8).reset_index()
+        stockout_fam.columns = ['Famille', 'Cout Rupture', 'Nb Demandes']
+        fig = px.bar(stockout_fam, x='Famille', y='Cout Rupture', title='Cout des ruptures par famille',
+                     color='Nb Demandes', color_continuous_scale='Oranges')
+        fig.update_layout(height=350)
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown(f"""
+    <div class="warning-box">
+    <b>Constat :</b> {stockout_pct:.0f}% des demandes de pieces sont en rupture de stock,
+    pour un cout total de {stockout_cost:,.0f} EUR. Les familles plomberie, electricite et menuiserie
+    representent la majorite des ruptures.<br><br>
+    <b>Recommandation :</b> Revoir les seuils de reapprovisionnement des 144 articles Pareto.
+    Mettre en place un stock de securite pour les 5 articles les plus couteux en rupture
+    (peinture vinylique, abattants, robinets, cylindres, cables).
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Section 6: Conformite preventive ──
+    st.markdown("---")
+    st.markdown("### 6. Conformite de la maintenance preventive")
+
+    eff = data.get('effectiveness_summary', {})
+    compliance = eff.get('compliance', {})
+    compliance_rate = compliance.get('compliance_rate', 26.5)
+    avg_deviation = compliance.get('avg_deviation_days', 23.7)
+
+    # Compliance by site (compute from preventive data)
+    prev = data['preventive'].copy()
+    prev['date_debut'] = pd.to_datetime(prev.get('date_debut'), errors='coerce')
+    prev['date_debut_planifiee'] = pd.to_datetime(prev.get('date_debut_planifiee'), errors='coerce')
+    prev['deviation'] = (prev['date_debut'] - prev['date_debut_planifiee']).dt.total_seconds() / 86400
+    prev_valid = prev.dropna(subset=['deviation'])
+    prev_valid['on_time'] = prev_valid['deviation'].abs() <= 1
+
+    if len(prev_valid) > 0:
+        comp_site = prev_valid.groupby('site').agg(
+            total=('on_time', 'count'), on_time=('on_time', 'sum')
+        )
+        comp_site['rate'] = (comp_site['on_time'] / comp_site['total'] * 100).round(1)
+        comp_site = comp_site.reset_index()
+
+        fig = px.bar(comp_site, x='site', y='rate', title='Taux de conformite preventive par site (%)',
+                     color='rate', color_continuous_scale='RdYlGn', text='rate')
+        fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
+        fig.update_layout(height=350, yaxis_range=[0, 50])
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown(f"""
+    <div class="warning-box">
+    <b>Constat :</b> Seulement {compliance_rate:.1f}% de la maintenance preventive est realisee dans les delais,
+    avec un ecart moyen de {avg_deviation:.1f} jours. Les sites TM2 (6.3%) et TMSA (4.7%)
+    sont les plus en retard.<br><br>
+    <b>Recommandation :</b> Mettre en place un tableau de suivi temps reel des echeances preventives.
+    Instaurer des penalites contractuelles pour les retards depassant 7 jours.
+    Prioriser les interventions sur les familles a MTBF faible.
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Summary table ──
+    st.markdown("---")
+    st.markdown("### Synthese des recommandations")
+
+    summary = pd.DataFrame({
+        'Recommandation': [
+            'Revue systematique des ordres anomalies (>10k EUR)',
+            'Remplacement des 10 equipements les plus recurrents',
+            'Inspection renforcee des familles a MTBF <15 jours',
+            'Renegociation contrats prestataires lents (>500h)',
+            'Stock de securite sur 144 articles Pareto',
+            'Suivi temps reel conformite preventive',
+        ],
+        'Impact estime': [
+            f'{anom_cost*0.5:,.0f} EUR economises',
+            f'{recurring_cost*0.3:,.0f} EUR economises',
+            'Reduction pannes repetitives',
+            'Reduction delais de cloture',
+            f'Reduction ruptures ({stockout_pct:.0f}% actuel)',
+            f'Objectif : passer de {compliance_rate:.0f}% a 60%',
+        ],
+        'Priorite': ['Haute', 'Haute', 'Moyenne', 'Moyenne', 'Haute', 'Haute'],
+        'Source donnees': [
+            'Detection anomalies (IF+SVM)',
+            'Analyse equipements recurrents',
+            'Calcul MTBF par famille',
+            'Performance prestataires',
+            'Analyse Pareto + ruptures',
+            'Analyse conformite preventive',
+        ]
     })
-    roi_data['ROI %'] = ((roi_data['Economies attendues'] - roi_data['Cout implementation']) / roi_data['Cout implementation'] * 100).round(1)
-
-    fig = px.bar(roi_data, x='Initiative', y=['Economies attendues', 'Cout implementation'],
-                 title='Economies vs Cout', barmode='group')
-    st.plotly_chart(fig, use_container_width=True)
-    st.dataframe(roi_data, use_container_width=True)
+    st.dataframe(summary, use_container_width=True)
 
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────

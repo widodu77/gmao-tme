@@ -400,21 +400,29 @@ Les modeles Random Forest (panne, anomalies) et leurs scalers sont charges norma
 \section{Recommandations}
 % ═══════════════════════════════════════════════════════════════
 
+Chaque recommandation est directement derivee des analyses realisees sur les donnees.
+
 \begin{table}[H]
 \centering
-\begin{tabular}{p{5cm}p{8cm}}
+\small
+\begin{tabular}{p{4cm}p{4.5cm}p{2.5cm}p{3cm}}
 \toprule
-\textbf{Constat} & \textbf{Recommandation} \\
+\textbf{Constat (donnees)} & \textbf{Recommandation} & \textbf{Impact estime} & \textbf{Source} \\
 \midrule
-Conformite preventive a 26.5\% & Renforcer le suivi des calendriers et la responsabilite des prestataires \\
-MTBF equipements securite : 7 jours & Augmenter la frequence d'inspection ou envisager le remplacement \\
-Performance prestataires : ecart x25 & Renegocier les contrats avec les prestataires sous-performants \\
-11\% des articles = 80\% des couts & Concentrer l'optimisation stock sur les 144 articles critiques \\
-267 actifs avec pannes recurrentes & Analyser les causes racines, planifier le remplacement \\
-Taux de rupture stock a 49\% & Revoir les seuils de reapprovisionnement des familles critiques \\
+268 anomalies = 67.8\% du cout correctif total & Revue systematique des ordres $>$10\,000 EUR & $\sim$6\,M EUR d'economies (reduction 50\%) & Detection anomalies (IF+SVM) \\
+\addlinespace
+81 equipements a 3+ pannes = 22.3\% du cout & Analyse causes racines, remplacement si cout cumule $>$ cout remplacement & $\sim$1.2\,M EUR & Analyse recurrence \\
+\addlinespace
+MTBF securite/cloture : 7--8 jours & Inspection renforcee pour familles a MTBF $<$15j, remplacement clotures & Reduction pannes repetitives & Calcul MTBF \\
+\addlinespace
+Ecart prestataires : x160 (30h vs 4\,873h) & Renegociation contrats $>$500h, redistribution volume & Reduction delais cloture & Performance prestataires \\
+\addlinespace
+49\% ruptures stock, 7.7\,M EUR affectes & Stock securite sur 144 articles Pareto, revoir seuils reappro & Reduction ruptures 49\%$\rightarrow$25\% & Pareto + ruptures \\
+\addlinespace
+Conformite preventive : 26.5\% (TM2: 6.3\%, TMSA: 4.7\%) & Suivi temps reel, penalites retard $>$7j & Objectif 60\% & Conformite par site \\
 \bottomrule
 \end{tabular}
-\caption{Recommandations operationnelles}
+\caption{Recommandations operationnelles avec impact chiffre}
 \end{table}
 
 % ═══════════════════════════════════════════════════════════════
