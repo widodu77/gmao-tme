@@ -165,7 +165,7 @@ def show_predictions(data):
 
     with col2:
         anomalie = st.selectbox("Type d'anomalie", anomalies, index=0)
-        cout_total = st.number_input("Cout total estime (EUR)", min_value=0.0, value=500.0, step=50.0)
+        cout_total = st.number_input("Cout total estime (MAD)", min_value=0.0, value=500.0, step=50.0)
         duree_intervention = st.number_input("Duree intervention (heures)", min_value=0.0, value=2.0, step=0.5)
         nombre_main_doeuvre = st.number_input("Nombre main d'oeuvre", min_value=1, value=2, step=1)
 
@@ -895,7 +895,7 @@ def show_models(data):
             c3.metric("Taux rejet", f"{health.get('rejection_rate_pct',0):.1f}%")
             c4.metric("Articles a reapprovisionner", sp_summary.get('articles_needing_reorder', 0))
 
-            st.metric("Cout previsionnel 90j", f"{sp_summary.get('total_forecast_cost_90d',0):,.0f} EUR")
+            st.metric("Cout previsionnel 90j", f"{sp_summary.get('total_forecast_cost_90d',0):,.0f} MAD")
 
             if 'demand_forecast' in data:
                 forecast = data['demand_forecast']
@@ -926,7 +926,7 @@ def show_models(data):
             for k, v in roi.items():
                 label = k.replace('_', ' ').title()
                 if abs(v) > 1000:
-                    roi_rows.append({'Metrique': label, 'Valeur': f"{v:,.0f} EUR"})
+                    roi_rows.append({'Metrique': label, 'Valeur': f"{v:,.0f} MAD"})
                 else:
                     roi_rows.append({'Metrique': label, 'Valeur': f"{v:.1f}%"})
             st.dataframe(pd.DataFrame(roi_rows), use_container_width=True)
@@ -988,7 +988,7 @@ def show_recommendations(data):
     st.markdown("### 1. Impact des anomalies sur les couts")
     c1, c2, c3 = st.columns(3)
     c1.metric("Ordres anomalies", f"{len(ap[ap['anomaly_consensus']==1]) if 'anomaly_predictions' in data else 0}")
-    c2.metric("Cout des anomalies", f"{anom_cost:,.0f} EUR")
+    c2.metric("Cout des anomalies", f"{anom_cost:,.0f} MAD")
     c3.metric("Part du cout total", f"{anom_pct:.1f}%")
 
     st.markdown(f"""
@@ -996,9 +996,9 @@ def show_recommendations(data):
     <b>Constat :</b> {anom_pct:.0f}% du cout total de maintenance corrective est concentre sur seulement
     {len(ap[ap['anomaly_consensus']==1]) if 'anomaly_predictions' in data else 0} ordres detectes comme anomalies
     (cout moyen 14x superieur a la normale).<br><br>
-    <b>Recommandation :</b> Mettre en place une revue systematique des ordres dont le cout depasse 10 000 EUR
+    <b>Recommandation :</b> Mettre en place une revue systematique des ordres dont le cout depasse 10 000 MAD
     ou la duree depasse 100 heures. Une reduction de 50% des anomalies representerait une economie de
-    <b>{anom_cost*0.5:,.0f} EUR</b> sur 89 jours.
+    <b>{anom_cost*0.5:,.0f} MAD</b> sur 89 jours.
     </div>
     """, unsafe_allow_html=True)
 
@@ -1007,7 +1007,7 @@ def show_recommendations(data):
     st.markdown("### 2. Equipements a pannes recurrentes")
     c1, c2, c3 = st.columns(3)
     c1.metric("Equipements (3+ pannes)", f"{len(recurring_3plus)}")
-    c2.metric("Cout cumule", f"{recurring_cost:,.0f} EUR")
+    c2.metric("Cout cumule", f"{recurring_cost:,.0f} MAD")
     c3.metric("Part du cout correctif", f"{recurring_pct:.1f}%")
 
     # Top 10 recurring equipment table
@@ -1017,7 +1017,7 @@ def show_recommendations(data):
     top_recur.columns = ['ID Actif', 'Famille', 'Site', 'Nb Pannes', 'Cout Total']
 
     st.dataframe(top_recur, use_container_width=True, column_config={
-        'Cout Total': st.column_config.NumberColumn(format="%.0f EUR"),
+        'Cout Total': st.column_config.NumberColumn(format="%.0f MAD"),
     })
 
     st.markdown(f"""
@@ -1091,7 +1091,7 @@ def show_recommendations(data):
     st.markdown("### 5. Gestion des pieces de rechange")
     c1, c2, c3 = st.columns(3)
     c1.metric("Taux de rupture", f"{stockout_pct:.0f}%")
-    c2.metric("Cout des ruptures", f"{stockout_cost:,.0f} EUR")
+    c2.metric("Cout des ruptures", f"{stockout_cost:,.0f} MAD")
     c3.metric("Articles critiques (Pareto 80%)", "144 / 1 305")
 
     if len(stockout) > 0:
@@ -1105,7 +1105,7 @@ def show_recommendations(data):
     st.markdown(f"""
     <div class="warning-box">
     <b>Constat :</b> {stockout_pct:.0f}% des demandes de pieces sont en rupture de stock,
-    pour un cout total de {stockout_cost:,.0f} EUR. Les familles plomberie, electricite et menuiserie
+    pour un cout total de {stockout_cost:,.0f} MAD. Les familles plomberie, electricite et menuiserie
     representent la majorite des ruptures.<br><br>
     <b>Recommandation :</b> Revoir les seuils de reapprovisionnement des 144 articles Pareto.
     Mettre en place un stock de securite pour les 5 articles les plus couteux en rupture
@@ -1160,7 +1160,7 @@ def show_recommendations(data):
 
     summary = pd.DataFrame({
         'Recommandation': [
-            'Revue systematique des ordres anomalies (>10k EUR)',
+            'Revue systematique des ordres anomalies (>10k MAD)',
             'Remplacement des 10 equipements les plus recurrents',
             'Inspection renforcee des familles a MTBF <15 jours',
             'Renegociation contrats prestataires lents (>500h)',
@@ -1168,8 +1168,8 @@ def show_recommendations(data):
             'Suivi temps reel conformite preventive',
         ],
         'Impact estime': [
-            f'{anom_cost*0.5:,.0f} EUR economises',
-            f'{recurring_cost*0.3:,.0f} EUR economises',
+            f'{anom_cost*0.5:,.0f} MAD economises',
+            f'{recurring_cost*0.3:,.0f} MAD economises',
             'Reduction pannes repetitives',
             'Reduction delais de cloture',
             f'Reduction ruptures ({stockout_pct:.0f}% actuel)',
