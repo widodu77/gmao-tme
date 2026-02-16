@@ -182,6 +182,8 @@ Trois modeles ont ete developpes, tous implementes dans \texttt{src/models/} ave
   \item \textbf{One-Class SVM} : apprend la frontiere de la distribution ``normale'' dans un espace de haute dimension (noyau RBF).
 \end{itemize}
 
+\textbf{Justification du choix :} Ces deux methodes sont complementaires et particulierement adaptees a la detection d'anomalies en maintenance. L'Isolation Forest excelle sur les anomalies globales (points isoles dans l'espace des features) avec une complexite lineaire $O(n)$, ce qui le rend efficace sur de grands volumes. Le One-Class SVM capture mieux les anomalies locales proches de la frontiere de decision grace a son noyau RBF, qui projette les donnees dans un espace de dimension superieure. Leur combinaison par consensus reduit les faux positifs : le taux d'accord de 93.7\% confirme la coherence des detections.
+
 \textbf{Consensus :} Un echantillon est marque comme anomalie si \textit{au moins une} des deux methodes le detecte. L'anomalie est dite ``haute confiance'' si les deux methodes concordent.
 
 16 features numeriques sont utilisees : couts, durees, metriques equipement, fenetres glissantes.
@@ -202,6 +204,18 @@ Accord entre methodes & 93.7\% \\
 \end{table}
 
 Les anomalies detectees presentent un cout moyen 14x superieur (45\,454 vs 3\,272 EUR), une duree d'intervention 7.6x superieure et un temps de cloture 7.1x superieur aux ordres normaux.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{anomaly_scatter.png}
+\caption{Distribution des ordres de travail selon le cout et la duree d'intervention. Les anomalies (croix rouges) se concentrent dans les zones de cout et/ou duree elevees.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{anomaly_comparison.png}
+\caption{Comparaison des moyennes entre ordres normaux et anomalies. Les anomalies presentent des valeurs significativement superieures sur les trois metriques cles.}
+\end{figure}
 
 \subsection{Prediction de panne a 30 jours}
 
@@ -251,7 +265,7 @@ La predominance de \texttt{equipment\_failure\_count} confirme l'intuition que l
 
 \subsection{Prediction de besoin en pieces de rechange}
 
-\textbf{Algorithme :} Random Forest Classifier (200 arbres, profondeur max 10, \texttt{class\_weight='balanced'}).
+\textbf{Algorithme :} Random Forest Classifier (200 arbres, profondeur max 10, {class\_weight='balanced'}).
 
 \textbf{Note sur le choix d'algorithme :} Ce modele utilisait initialement un \texttt{GradientBoostingClassifier}, qui offrait des performances legerement superieures (F1 = 0.948). Cependant, lors du deploiement sur Streamlit Cloud (Linux), le modele serialise (pickle) n'etait pas compatible avec l'environnement de production. Le \texttt{GradientBoostingClassifier} de scikit-learn utilise en interne des fonctions de perte compilees en Cython (\texttt{CyHalfBinomialLoss}), dont les binaires sont specifiques a l'OS et a l'architecture. Un modele entraine sous Windows ne peut pas etre deserialise sous Linux, meme avec la meme version de scikit-learn. Le passage a \texttt{RandomForestClassifier}, qui ne serialise que des objets Python/NumPy standards, a resolu le probleme avec une perte de performance negligeable.
 
