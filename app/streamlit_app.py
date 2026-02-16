@@ -28,8 +28,8 @@ st.markdown("""
     .main-header { font-size: 2.5rem; font-weight: bold; color: #1f77b4; margin-bottom: 1rem; }
     .sub-header { font-size: 1.8rem; font-weight: bold; color: #2c3e50; margin-top: 1.5rem; margin-bottom: 0.5rem; }
     .insight-box { background-color: #e8f4f8; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0; }
-    .warning-box { background-color: #fff3cd; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0; border-left: 4px solid #ffc107; }
-    .success-box { background-color: #d4edda; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0; border-left: 4px solid #28a745; }
+    .warning-box { background-color: #fff3cd; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0; border-left: 4px solid #ffc107; color: #333; }
+    .success-box { background-color: #d4edda; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0; border-left: 4px solid #28a745; color: #333; }
 </style>
 """, unsafe_allow_html=True)
 
