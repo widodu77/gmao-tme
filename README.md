@@ -32,7 +32,8 @@ gmao-ai-project/
 ├── reports/                # Sorties d'analyse (CSV, PNG, JSON)
 ├── notebooks/              # Notebooks d'exploration
 ├── run_pipeline.py         # Pipeline bout-en-bout (4 etapes)
-└── requirements.txt
+├── requirements.txt
+└── gmao_tme_technical_report_.pdf
 ```
 
 ## Utilisation
